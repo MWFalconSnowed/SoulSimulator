@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { ButtonProps } from "@/components/ui/button";
 
 interface FantasyButtonProps extends ButtonProps {
-  variant?: "gold" | "copper" | "mystical" | "emerald" | "crimson" | "default";
+  variant?: "gold" | "copper" | "mystical" | "emerald" | "crimson" | "purple" | "default";
   glowing?: boolean;
 }
 
@@ -18,6 +18,7 @@ export function FantasyButton({
     gold: "bg-yellow-600 hover:bg-yellow-500 text-black border-yellow-400",
     copper: "bg-orange-700 hover:bg-orange-600 text-white border-orange-500",
     mystical: "bg-purple-900 hover:bg-purple-800 text-white border-purple-600",
+    purple: "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-purple-400",
     emerald: "bg-green-800 hover:bg-green-700 text-white border-green-600",
     crimson: "bg-red-900 hover:bg-red-800 text-white border-red-600",
     default: "glass-panel hover:bg-gray-800 text-white border-yellow-600/30"

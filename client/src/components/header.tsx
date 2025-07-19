@@ -1,7 +1,8 @@
-import { Play, Pause, Square, Clock } from "lucide-react";
+import { Play, Pause, Square, Clock, Sparkles } from "lucide-react";
 import { FantasyButton } from "@/components/ui/fantasy-button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useSimulation } from "@/hooks/use-simulation";
+import { Link } from "wouter";
 
 export function Header() {
   const { 
@@ -60,9 +61,21 @@ export function Header() {
           </FantasyButton>
         </div>
         
-        <div className="text-sm text-yellow-400 flex items-center">
-          <Clock className="mr-1 h-4 w-4" />
-          {formatTime(simulationTime)}
+        <div className="flex items-center space-x-4">
+          <Link href="/meta-prompt">
+            <FantasyButton
+              variant="purple"
+              glowing
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Méta-Prompt
+            </FantasyButton>
+          </Link>
+          
+          <div className="text-sm text-yellow-400 flex items-center">
+            <Clock className="mr-1 h-4 w-4" />
+            {formatTime(simulationTime)}
+          </div>
         </div>
       </div>
     </GlassPanel>

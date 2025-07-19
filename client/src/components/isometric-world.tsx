@@ -1,14 +1,28 @@
-import { useEffect, useRef } from "react";
-import { ZoomIn, ZoomOut, Home } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ZoomIn, ZoomOut, Home, Map } from "lucide-react";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { FantasyButton } from "@/components/ui/fantasy-button";
 import { useWorldStore } from "@/stores/world-store";
 import { useSimulation } from "@/hooks/use-simulation";
+import { useMapByCode } from "@/hooks/use-maps";
+import map001Path from "@assets/MAP001_1752905174470.png";
 
 export function IsometricWorld() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | null>(null);
+  const [currentMapCode, setCurrentMapCode] = useState("MAP001");
   const { entities, selectedEntity, selectEntity } = useWorldStore();
   const { isRunning, simulationTime } = useSimulation();
+  const { data: currentMap } = useMapByCode(currentMapCode);
+
+  // Load background image
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setBackgroundImage(img);
+    };
+    img.src = map001Path;
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,8 +43,13 @@ export function IsometricWorld() {
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw isometric grid
-      drawIsometricGrid(ctx, canvas.width, canvas.height);
+      // Draw background map if available
+      if (backgroundImage) {
+        drawBackgroundMap(ctx, canvas.width, canvas.height);
+      } else {
+        // Fallback: Draw isometric grid
+        drawIsometricGrid(ctx, canvas.width, canvas.height);
+      }
 
       // Draw entities
       entities.forEach(entity => {
@@ -50,7 +69,44 @@ export function IsometricWorld() {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [entities, selectedEntity, isRunning]);
+  }, [entities, selectedEntity, isRunning, backgroundImage]);
+
+  const drawBackgroundMap = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    if (!backgroundImage) return;
+    
+    // Draw the background image to fill the canvas while maintaining aspect ratio
+    const scale = Math.max(width / backgroundImage.width, height / backgroundImage.height);
+    const scaledWidth = backgroundImage.width * scale;
+    const scaledHeight = backgroundImage.height * scale;
+    
+    // Center the image
+    const x = (width - scaledWidth) / 2;
+    const y = (height - scaledHeight) / 2;
+    
+    // Add atmospheric overlay
+    ctx.globalAlpha = 0.8;
+    ctx.drawImage(backgroundImage, x, y, scaledWidth, scaledHeight);
+    ctx.globalAlpha = 1.0;
+    
+    // Add subtle grid overlay on top of the background
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.08)';
+    ctx.lineWidth = 1;
+    const gridSize = 40;
+    
+    for (let i = 0; i < width; i += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, height);
+      ctx.stroke();
+    }
+    
+    for (let i = 0; i < height; i += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, i);
+      ctx.lineTo(width, i);
+      ctx.stroke();
+    }
+  };
 
   const drawIsometricGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     ctx.strokeStyle = 'rgba(212, 175, 55, 0.1)';
@@ -75,64 +131,81 @@ export function IsometricWorld() {
   const drawEntity = (ctx: CanvasRenderingContext2D, entity: any, isSelected: boolean) => {
     const { x, y } = entity.position;
     
-    // Convert to isometric coordinates
-    const isoX = (x - y) * 0.5;
-    const isoY = (x + y) * 0.25;
+    // Convert world coordinates to screen position (adjusted for the temple background)
+    const screenX = x;
+    const screenY = y;
     
-    // Draw entity based on type
+    // Draw entity based on type with enhanced visual effects for the temple setting
     ctx.save();
     
     if (isSelected) {
-      // Draw selection glow
-      ctx.shadowColor = '#d4af37';
-      ctx.shadowBlur = 20;
+      // Draw selection glow with temple-appropriate golden light
+      ctx.shadowColor = '#ffbf00';
+      ctx.shadowBlur = 25;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     }
     
     switch (entity.type) {
       case 'Atom':
-        drawAtom(ctx, isoX, isoY, entity.properties);
+        drawAtom(ctx, screenX, screenY, entity.properties);
         break;
       case 'Spawner':
-        drawSpawner(ctx, isoX, isoY, entity.properties);
+        drawSpawner(ctx, screenX, screenY, entity.properties);
         break;
       case 'Conscience':
-        drawConscience(ctx, isoX, isoY, entity.properties);
+        drawConscience(ctx, screenX, screenY, entity.properties);
         break;
       case 'Clone':
-        drawClone(ctx, isoX, isoY, entity.properties);
+        drawClone(ctx, screenX, screenY, entity.properties);
         break;
     }
     
     ctx.restore();
     
-    // Draw entity label
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px JetBrains Mono';
+    // Draw entity label with temple-style font and glow
+    ctx.save();
+    ctx.shadowColor = '#000000';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    ctx.fillStyle = '#ffbf00';
+    ctx.font = 'bold 11px Cinzel';
     ctx.textAlign = 'center';
-    ctx.fillText(entity.name, isoX, isoY - 30);
+    ctx.fillText(entity.name, screenX, screenY - 35);
+    ctx.restore();
   };
 
   const drawAtom = (ctx: CanvasRenderingContext2D, x: number, y: number, properties: any) => {
     const energyLevel = properties.energy / 100;
-    const radius = 8 + energyLevel * 4;
+    const radius = 12 + energyLevel * 6;
     
-    // Create gradient
+    // Create mystical temple orb gradient
     const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    gradient.addColorStop(0, '#ffbf00');
-    gradient.addColorStop(1, '#d4af37');
+    gradient.addColorStop(0, '#fff8dc');
+    gradient.addColorStop(0.3, '#ffd700');
+    gradient.addColorStop(0.7, '#ff8c00');
+    gradient.addColorStop(1, '#8b4513');
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
     
-    // Add pulsing effect
-    const pulseRadius = radius + Math.sin(Date.now() * 0.005) * 2;
-    ctx.strokeStyle = `rgba(212, 175, 55, ${0.5 * energyLevel})`;
-    ctx.lineWidth = 2;
+    // Add temple-style flickering effect like torchlight
+    const flickerIntensity = 0.8 + Math.sin(Date.now() * 0.008) * 0.2;
+    const pulseRadius = radius + Math.sin(Date.now() * 0.003) * 3;
+    ctx.strokeStyle = `rgba(255, 215, 0, ${0.6 * energyLevel * flickerIntensity})`;
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
     ctx.stroke();
+    
+    // Add inner core glow
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.4 * flickerIntensity})`;
+    ctx.beginPath();
+    ctx.arc(x, y, radius * 0.3, 0, Math.PI * 2);
+    ctx.fill();
   };
 
   const drawSpawner = (ctx: CanvasRenderingContext2D, x: number, y: number, properties: any) => {
@@ -277,12 +350,24 @@ export function IsometricWorld() {
         />
         
         {/* World Status Overlay */}
-        <GlassPanel className="absolute top-4 left-4 p-4">
-          <div className="text-xs text-yellow-400 font-semibold">World Status</div>
-          <div className="text-xs text-gray-300 mt-1 space-y-1">
-            <div>Entities: <span className="text-yellow-400">{entities.length}</span></div>
-            <div>Energy Flow: <span className="text-green-400">+{(entities.length * 15.7).toFixed(1)}/s</span></div>
-            <div>Memory Usage: <span className="text-blue-400">{(entities.length * 64 + 183)} KB</span></div>
+        <GlassPanel className="absolute top-4 left-4 p-4 space-y-3">
+          <div>
+            <div className="text-xs text-yellow-400 font-semibold flex items-center">
+              <Map className="mr-1 h-3 w-3" />
+              Current Map: {currentMap?.name || "MAP001 - Ancient Temple"}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              Code: {currentMapCode} | Dimensions: 800x600
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-xs text-yellow-400 font-semibold">World Status</div>
+            <div className="text-xs text-gray-300 mt-1 space-y-1">
+              <div>Entities: <span className="text-yellow-400">{entities.length}</span></div>
+              <div>Energy Flow: <span className="text-green-400">+{(entities.length * 15.7).toFixed(1)}/s</span></div>
+              <div>Memory Usage: <span className="text-blue-400">{(entities.length * 64 + 183)} KB</span></div>
+            </div>
           </div>
         </GlassPanel>
 

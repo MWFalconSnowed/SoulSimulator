@@ -20,6 +20,19 @@ export const worldEntities = pgTable("world_entities", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const worldMaps = pgTable("world_maps", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  code: text("code").notNull(), // MAP001, MAP002, etc.
+  backgroundImage: text("background_image").notNull(),
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  tileSize: integer("tile_size").default(32).notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const simulationLogs = pgTable("simulation_logs", {
   id: serial("id").primaryKey(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
@@ -46,6 +59,16 @@ export const insertSimulationLogSchema = createInsertSchema(simulationLogs).pick
   entityId: true,
 });
 
+export const insertWorldMapSchema = createInsertSchema(worldMaps).pick({
+  name: true,
+  code: true,
+  backgroundImage: true,
+  width: true,
+  height: true,
+  tileSize: true,
+  description: true,
+});
+
 export type SoulscriptFile = typeof soulscriptFiles.$inferSelect;
 export type InsertSoulscriptFile = z.infer<typeof insertSoulscriptFileSchema>;
 
@@ -54,3 +77,6 @@ export type InsertWorldEntity = z.infer<typeof insertWorldEntitySchema>;
 
 export type SimulationLog = typeof simulationLogs.$inferSelect;
 export type InsertSimulationLog = z.infer<typeof insertSimulationLogSchema>;
+
+export type WorldMap = typeof worldMaps.$inferSelect;
+export type InsertWorldMap = z.infer<typeof insertWorldMapSchema>;

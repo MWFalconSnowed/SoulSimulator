@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSoulscriptFileSchema, insertWorldEntitySchema, insertSimulationLogSchema } from "@shared/schema";
+import { insertSoulscriptFileSchema, insertWorldEntitySchema, insertSimulationLogSchema, insertWorldMapSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -173,6 +173,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ output });
     } catch (error) {
       res.status(500).json({ error: "Failed to execute code" });
+    }
+  });
+
+  // World Maps API
+  app.get("/api/maps", async (req, res) => {
+    try {
+      const maps = await storage.getAllMaps();
+      res.json(maps);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch maps" });
+    }
+  });
+
+  app.get("/api/maps/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const map = await storage.getMap(id);
+      
+      if (!map) {
+        return res.status(404).json({ error: "Map not found" });
+      }
+      
+      res.json(map);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch map" });
+    }
+  });
+
+  app.get("/api/maps/code/:code", async (req, res) => {
+    try {
+      const code = req.params.code;
+      const map = await storage.getMapByCode(code);
+      
+      if (!map) {
+        return res.status(404).json({ error: "Map not found" });
+      }
+      
+      res.json(map);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch map" });
+    }
+  });
+
+  app.post("/api/maps", async (req, res) => {
+    try {
+      const data = insertWorldMapSchema.parse(req.body);
+      const map = await storage.createMap(data);
+      res.status(201).json(map);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid map data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create map" });
     }
   });
 

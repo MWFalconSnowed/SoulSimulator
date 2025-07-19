@@ -22,72 +22,57 @@ export function Header() {
   };
 
   return (
-    <GlassPanel className="h-16 flex items-center justify-between px-6 z-50">
+    <div className="h-16 bg-gradient-to-r from-amber-950/95 to-amber-900/95 backdrop-blur-md border-b border-amber-600/30 flex items-center justify-between px-6 z-50">
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <div className="text-2xl entity-glow">✨</div>
-          <h1 className="fantasy-font text-2xl font-bold text-yellow-400">SoulScript IDE</h1>
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-amber-500 rounded flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
+            SoulScript IDE
+          </h1>
         </div>
-        <div className="text-sm text-gray-400">Universe Simulation Engine v2.0</div>
+        <div className="text-sm text-amber-400/70 font-medium">Universe Simulation Engine v2.0</div>
       </div>
       
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <FantasyButton
-            variant="gold"
+          <button
             onClick={startSimulation}
             disabled={isRunning && !isPaused}
-            glowing={isRunning && !isPaused}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center ${
+              isRunning && !isPaused 
+                ? 'bg-green-600 text-white shadow-lg shadow-green-500/30'
+                : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg'
+            }`}
           >
             <Play className="mr-2 h-4 w-4" />
             Run Simulation
-          </FantasyButton>
+          </button>
           
-          <FantasyButton
-            variant="copper"
+          <button
             onClick={pauseSimulation}
             disabled={!isRunning}
+            className="px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:bg-gray-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-all duration-200 flex items-center"
           >
-            <Pause className="mr-2 h-4 w-4" />
+            <Pause className="mr-1 h-4 w-4" />
             Pause
-          </FantasyButton>
+          </button>
           
-          <FantasyButton
-            variant="default"
+          <button
             onClick={resetSimulation}
+            className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium text-sm transition-all duration-200 flex items-center"
           >
-            <Square className="mr-2 h-4 w-4" />
+            <Square className="mr-1 h-4 w-4" />
             Reset
-          </FantasyButton>
+          </button>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <Link href="/temple">
-            <FantasyButton
-              variant="gold"
-              glowing
-            >
-              <Flame className="mr-2 h-4 w-4" />
-              Temple Cosmique
-            </FantasyButton>
-          </Link>
-
-          <Link href="/meta-prompt">
-            <FantasyButton
-              variant="purple"
-              glowing
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Méta-Prompt
-            </FantasyButton>
-          </Link>
-          
-          <div className="text-sm text-yellow-400 flex items-center">
-            <Clock className="mr-1 h-4 w-4" />
-            {formatTime(simulationTime)}
-          </div>
+        <div className="flex items-center bg-amber-900/50 border border-amber-700/50 rounded-lg px-3 py-2">
+          <Clock className="mr-2 h-4 w-4 text-amber-400" />
+          <span className="text-amber-200 font-mono text-sm">{formatTime(simulationTime)}</span>
         </div>
       </div>
-    </GlassPanel>
+    </div>
   );
 }

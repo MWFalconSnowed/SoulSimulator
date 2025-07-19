@@ -6,7 +6,7 @@ import { StatusBar } from "@/components/status-bar";
 
 export default function IDE() {
   return (
-    <div className="h-screen flex flex-col bg-gray-900 medieval-texture overflow-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-900 via-amber-900/20 to-gray-800 overflow-hidden">
       <Header />
       
       <div className="flex-1 flex overflow-hidden">

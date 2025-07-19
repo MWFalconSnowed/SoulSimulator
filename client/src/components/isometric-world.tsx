@@ -342,7 +342,7 @@ export function IsometricWorld() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="flex-1 relative bg-gradient-to-br from-gray-900 to-black overflow-hidden">
+      <div className="flex-1 relative bg-gradient-to-br from-gray-900 via-amber-900/5 to-gray-800 overflow-hidden">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full cursor-pointer"
@@ -350,38 +350,38 @@ export function IsometricWorld() {
         />
         
         {/* World Status Overlay */}
-        <GlassPanel className="absolute top-4 left-4 p-4 space-y-3">
+        <div className="absolute top-4 left-4 bg-amber-950/90 backdrop-blur-md border border-amber-600/40 rounded-lg p-4 space-y-3">
           <div>
-            <div className="text-xs text-yellow-400 font-semibold flex items-center">
+            <div className="text-xs text-amber-300 font-semibold flex items-center">
               <Map className="mr-1 h-3 w-3" />
-              Current Map: {currentMap?.name || "MAP001 - Ancient Temple"}
+              Current Map: {currentMap?.name || "Ancient Temple"}
             </div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-amber-400/70 mt-1">
               Code: {currentMapCode} | Dimensions: 800x600
             </div>
           </div>
           
           <div>
-            <div className="text-xs text-yellow-400 font-semibold">World Status</div>
-            <div className="text-xs text-gray-300 mt-1 space-y-1">
-              <div>Entities: <span className="text-yellow-400">{entities.length}</span></div>
-              <div>Energy Flow: <span className="text-green-400">+{(entities.length * 15.7).toFixed(1)}/s</span></div>
-              <div>Memory Usage: <span className="text-blue-400">{(entities.length * 64 + 183)} KB</span></div>
+            <div className="text-xs text-amber-300 font-semibold">World Status</div>
+            <div className="text-xs text-amber-200 mt-1 space-y-1">
+              <div>Entities: <span className="text-yellow-300">{entities.length}</span></div>
+              <div>Energy Flow: <span className="text-green-300">+{(entities.length * 15.7).toFixed(1)}/s</span></div>
+              <div>Memory Usage: <span className="text-blue-300">{(entities.length * 64 + 183)} KB</span></div>
             </div>
           </div>
-        </GlassPanel>
+        </div>
 
         {/* Viewport Controls */}
         <div className="absolute bottom-4 right-4 flex space-x-2">
-          <FantasyButton variant="default" className="p-2">
+          <button className="p-2 bg-amber-700 hover:bg-amber-600 text-white rounded transition-colors">
             <ZoomIn className="h-4 w-4" />
-          </FantasyButton>
-          <FantasyButton variant="default" className="p-2">
+          </button>
+          <button className="p-2 bg-amber-700 hover:bg-amber-600 text-white rounded transition-colors">
             <ZoomOut className="h-4 w-4" />
-          </FantasyButton>
-          <FantasyButton variant="default" className="p-2">
+          </button>
+          <button className="p-2 bg-amber-700 hover:bg-amber-600 text-white rounded transition-colors">
             <Home className="h-4 w-4" />
-          </FantasyButton>
+          </button>
         </div>
       </div>
     </div>

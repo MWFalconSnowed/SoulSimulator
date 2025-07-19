@@ -5,12 +5,12 @@ import { FantasyButton } from "@/components/ui/fantasy-button";
 import { useWorldStore } from "@/stores/world-store";
 import { useSimulation } from "@/hooks/use-simulation";
 import { useMapByCode } from "@/hooks/use-maps";
-import map001Path from "@assets/MAP001_1752905174470.png";
+import map003Path from "@assets/image_1752918218266.png";
 
 export function IsometricWorld() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | null>(null);
-  const [currentMapCode, setCurrentMapCode] = useState("MAP001");
+  const [currentMapCode, setCurrentMapCode] = useState("MAP003");
   const { entities, selectedEntity, selectEntity } = useWorldStore();
   const { isRunning, simulationTime } = useSimulation();
   const { data: currentMap } = useMapByCode(currentMapCode);
@@ -21,7 +21,7 @@ export function IsometricWorld() {
     img.onload = () => {
       setBackgroundImage(img);
     };
-    img.src = map001Path;
+    img.src = map003Path;
   }, []);
 
   useEffect(() => {
@@ -354,10 +354,10 @@ export function IsometricWorld() {
           <div>
             <div className="text-xs text-amber-300 font-semibold flex items-center">
               <Map className="mr-1 h-3 w-3" />
-              Current Map: {currentMap?.name || "Ancient Temple"}
+              Current Map: {currentMap?.name || "Temple Mystique Émeraude"}
             </div>
             <div className="text-xs text-amber-400/70 mt-1">
-              Code: {currentMapCode} | Dimensions: 800x600
+              Code: {currentMapCode} | Dimensions: 1024x768
             </div>
           </div>
           

@@ -1,0 +1,11 @@
+component Atom {
+    float energy = 100;
+    float charge = -1;
+
+    fn update(float dt) {
+        energy += charge * dt;
+        if energy < 0 {
+            destroy();
+        }
+    }
+}

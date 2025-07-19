@@ -1,0 +1,13 @@
+component Spawner {
+    int count = 5;
+    float rate = 2.0;
+    float timer = 0;
+
+    fn update(float dt) {
+        timer += dt;
+        if timer > rate {
+            spawn("Atom");
+            timer = 0;
+        }
+    }
+}

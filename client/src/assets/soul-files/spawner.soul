@@ -1,0 +1,184 @@
+// Intelligent Spawner - Creates and manages entities
+component Spawner {
+    // Spawn configuration
+    float spawnRate = 2.5;
+    int maxEntities = 8;
+    string spawnType = "Atom";
+    vec2 spawnArea = {100.0, 100.0};
+    
+    // Internal state
+    float timer = 0.0;
+    int currentCount = 0;
+    array spawnedEntities = [];
+    
+    // Adaptive behavior
+    float efficiency = 1.0;
+    bool smartMode = true;
+    float energyThreshold = 50.0;
+    
+    fn init(vec2 pos, string entityType) {
+        position = pos;
+        spawnType = entityType;
+        log("Spawner initialized for type: " + spawnType);
+        
+        // Register for entity destruction events
+        subscribe("atomDestroyed", "onEntityDestroyed");
+    }
+    
+    fn update(float deltaTime) {
+        timer += deltaTime;
+        
+        // Check if we should spawn
+        if (shouldSpawn()) {
+            performSpawn();
+            timer = 0.0;
+        }
+        
+        // Update adaptive behavior
+        if (smartMode) {
+            updateIntelligence(deltaTime);
+        }
+        
+        // Visual feedback
+        updateVisuals();
+    }
+    
+    fn shouldSpawn() -> bool {
+        if (timer < spawnRate) return false;
+        if (currentCount >= maxEntities) return false;
+        
+        // Smart spawning - check world conditions
+        if (smartMode) {
+            float worldEnergy = getTotalWorldEnergy();
+            if (worldEnergy < energyThreshold) {
+                return false; // Don't overwhelm low-energy world
+            }
+        }
+        
+        return true;
+    }
+    
+    fn performSpawn() {
+        // Calculate spawn position
+        vec2 spawnPos = position + randomVec2(
+            -spawnArea.x/2, spawnArea.x/2,
+            -spawnArea.y/2, spawnArea.y/2
+        );
+        
+        // Create entity based on type
+        Entity newEntity;
+        switch (spawnType) {
+            case "Atom":
+                newEntity = createEntity("Atom", spawnPos);
+                newEntity.init(spawnPos, 75.0 + random() * 50.0);
+                break;
+                
+            case "Conscience":
+                newEntity = createEntity("Conscience", spawnPos);
+                newEntity.init(spawnPos, 100.0);
+                break;
+                
+            default:
+                newEntity = createEntity(spawnType, spawnPos);
+        }
+        
+        // Track spawned entity
+        spawnedEntities.add(newEntity.id);
+        currentCount++;
+        
+        // Visual spawn effect
+        createParticle("spawn", spawnPos, rgb(0, 255, 255));
+        
+        log("Spawned " + spawnType + " at " + spawnPos + " (Total: " + currentCount + ")");
+        
+        // Adapt spawn rate based on success
+        if (efficiency > 0.8) {
+            spawnRate = max(spawnRate * 0.95, 1.0); // Spawn faster if doing well
+        } else {
+            spawnRate = min(spawnRate * 1.1, 5.0);  // Spawn slower if struggling
+        }
+    }
+    
+    fn updateIntelligence(float deltaTime) {
+        // Calculate efficiency based on entity survival
+        int aliveCount = 0;
+        for (int id : spawnedEntities) {
+            if (entityExists(id)) {
+                aliveCount++;
+            }
+        }
+        
+        efficiency = currentCount > 0 ? float(aliveCount) / float(currentCount) : 1.0;
+        
+        // Dynamic spawn type selection
+        float worldDensity = getEntityCount() / 100.0;
+        if (worldDensity > 0.8) {
+            spawnType = "Conscience"; // Switch to thinking entities in crowded worlds
+        } else if (worldDensity < 0.3) {
+            spawnType = "Atom";       // Use basic atoms in sparse worlds
+        }
+        
+        // Adjust spawn area based on success
+        if (efficiency < 0.5) {
+            spawnArea = spawnArea * 1.1; // Spread out more if entities are dying
+        } else {
+            spawnArea = spawnArea * 0.99; // Concentrate if doing well
+        }
+        
+        // Clamp spawn area limits
+        spawnArea.x = clamp(spawnArea.x, 50.0, 200.0);
+        spawnArea.y = clamp(spawnArea.y, 50.0, 200.0);
+    }
+    
+    fn updateVisuals() {
+        // Pulsing effect based on spawn timer
+        float pulse = sin(timer * 3.14159 * 2 / spawnRate);
+        radius = 20.0 + pulse * 5.0;
+        
+        // Color coding based on efficiency
+        if (efficiency > 0.8) {
+            tint = rgb(0, 255, 0);      // Green = high efficiency
+        } else if (efficiency > 0.5) {
+            tint = rgb(255, 255, 0);    // Yellow = medium efficiency
+        } else {
+            tint = rgb(255, 100, 0);    // Orange = low efficiency
+        }
+    }
+    
+    // Event handlers
+    fn onEntityDestroyed(map eventData) {
+        int destroyedId = eventData["id"];
+        if (spawnedEntities.contains(destroyedId)) {
+            spawnedEntities.remove(destroyedId);
+            currentCount--;
+            log("Tracked entity destroyed. Remaining: " + currentCount);
+        }
+    }
+    
+    // Utility functions
+    fn getTotalWorldEnergy() -> float {
+        float total = 0.0;
+        array entities = getAllEntities();
+        for (Entity e : entities) {
+            if (e.hasProperty("energy")) {
+                total += e.energy;
+            }
+        }
+        return total;
+    }
+    
+    fn setSpawnType(string newType) {
+        spawnType = newType;
+        log("Spawner type changed to: " + newType);
+    }
+    
+    fn getStatistics() -> map {
+        return {
+            "spawnRate": spawnRate,
+            "currentCount": currentCount,
+            "efficiency": efficiency,
+            "spawnType": spawnType,
+            "maxEntities": maxEntities
+        };
+    }
+}

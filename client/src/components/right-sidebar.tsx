@@ -8,6 +8,7 @@ import { EntityProperties } from "@/components/entity-properties";
 import { useWorldStore } from "@/stores/world-store";
 import { Separator } from "@/components/ui/separator";
 import { SoulScriptTemplates } from "@/components/soulscript-templates";
+import { SoulFileManager } from "@/components/soul-file-manager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function RightSidebar() {
@@ -82,8 +83,9 @@ export function RightSidebar() {
               </div>
             </div>
             
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="editor">Editor</TabsTrigger>
+              <TabsTrigger value="files">.soul</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
@@ -112,6 +114,19 @@ export function RightSidebar() {
                 placeholder="Write your SoulScript code here..."
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="files" className="flex-1">
+            <SoulFileManager 
+              onFileSelect={(filename, content) => {
+                setCurrentFile(filename);
+                setCode(content);
+              }}
+              onExecuteFile={(content) => {
+                setCode(content);
+                executeCode(content);
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="templates" className="flex-1">

@@ -16,6 +16,13 @@ Interface Design: Focus on beautiful, polished UI inspired by Baldur's Gate with
 - Replaced glass panels with elegant gradients and proper contrast
 - Updated buttons with modern rounded design and hover effects
 - Enhanced isometric world view with better overlays and controls
+- **Added complete SoulScript language system**: Custom .soul files with advanced interpreter
+- Created default .soul components (Atom, Spawner, Conscience, WorldManager)  
+- Integrated file management system for .soul files with import/export
+- Enhanced tabs interface (Editor, .soul Files, Templates, Logs)
+- Added entity properties panel with real-time editing
+- Implemented world tools (save/load worlds, clear all)
+- Added animation controls with speed/quality settings
 - User confirmed satisfaction with the new professional appearance
 
 ## System Architecture
@@ -46,9 +53,13 @@ The application follows a modern full-stack architecture with clear separation b
 ## Key Components
 
 ### SoulScript Language System
-The application includes a custom scripting language with two main components:
+The application features a complete custom programming language designed for RPG entity development:
 - **Parser** (`soulscript-parser.ts`): Converts SoulScript source code into Abstract Syntax Trees (AST)
-- **Interpreter** (`soulscript-interpreter.ts`): Executes the parsed code and manages runtime components
+- **Advanced Interpreter** (`soulscript-interpreter.ts`): Full execution engine with built-in functions, events, and world management
+- **Default .soul Files**: Pre-built components (atom.soul, spawner.soul, conscience.soul, world-manager.soul)
+- **File Management**: Complete IDE system for creating, editing, importing, and exporting .soul files
+- **Runtime Features**: Entity creation, physics simulation, event broadcasting, consciousness modeling
+- **Built-in Functions**: Math, vectors, colors, entity management, time, events, and utility functions
 
 ### World Simulation Engine
 - **Isometric Renderer**: Canvas-based isometric world view with entity visualization

@@ -1,0 +1,112 @@
+// Basic Atom Component - Energy-based entity
+component Atom {
+    // Properties
+    float energy = 100.0;
+    float charge = -1.0;
+    vec2 velocity = {0.0, 0.0};
+    vec2 position = {0.0, 0.0};
+    float radius = 15.0;
+    color tint = rgb(255, 255, 0);
+    
+    // State flags
+    bool isAlive = true;
+    bool canInteract = true;
+    
+    // Constructor
+    fn init(vec2 startPos, float initialEnergy) {
+        position = startPos;
+        energy = initialEnergy;
+        velocity = randomVec2(-10, 10);
+        log("Atom created at " + position + " with energy " + energy);
+    }
+    
+    // Main update loop (called every frame)
+    fn update(float deltaTime) {
+        if (!isAlive) return;
+        
+        // Energy decay over time
+        energy += charge * deltaTime * 10;
+        
+        // Movement physics
+        position.x += velocity.x * deltaTime;
+        position.y += velocity.y * deltaTime;
+        
+        // Boundary checking
+        if (position.x < 0 || position.x > 800) {
+            velocity.x *= -0.8;
+            position.x = clamp(position.x, 0, 800);
+        }
+        if (position.y < 0 || position.y > 600) {
+            velocity.y *= -0.8;
+            position.y = clamp(position.y, 0, 600);
+        }
+        
+        // Visual feedback based on energy
+        if (energy > 75) {
+            tint = rgb(0, 255, 0);      // Green = high energy
+        } else if (energy > 25) {
+            tint = rgb(255, 255, 0);    // Yellow = medium energy
+        } else {
+            tint = rgb(255, 0, 0);      // Red = low energy
+        }
+        
+        // Death condition
+        if (energy <= 0) {
+            destroy();
+        }
+    }
+    
+    // Collision detection with other entities
+    fn onCollision(Entity other) {
+        if (!canInteract) return;
+        
+        // Energy transfer
+        float transfer = 5.0;
+        if (other.hasProperty("energy")) {
+            energy -= transfer;
+            other.energy += transfer;
+            
+            // Visual effect
+            createParticle("spark", position, rgb(255, 255, 255));
+            
+            log("Energy transfer: " + transfer + " to " + other.name);
+        }
+        
+        // Bounce physics
+        vec2 direction = normalize(position - other.position);
+        velocity += direction * 50.0;
+        
+        // Temporary immunity
+        canInteract = false;
+        scheduleCall("resetInteraction", 1.0);
+    }
+    
+    // Called when atom is about to be destroyed
+    fn onDestroy() {
+        log("Atom destroyed with final energy: " + energy);
+        
+        // Create explosion effect
+        for (int i = 0; i < 10; i++) {
+            vec2 sparkPos = position + randomVec2(-20, 20);
+            createParticle("explosion", sparkPos, tint);
+        }
+        
+        // Notify other systems
+        broadcast("atomDestroyed", {id: this.id, position: position});
+    }
+    
+    // Helper functions
+    fn resetInteraction() {
+        canInteract = true;
+    }
+    
+    fn addEnergy(float amount) {
+        energy += amount;
+        energy = min(energy, 200.0); // Cap maximum energy
+        log("Energy added: " + amount + ", new total: " + energy);
+    }
+    
+    fn getInfo() -> string {
+        return "Atom[" + this.id + "] Energy: " + energy + " Position: " + position;
+    }
+}

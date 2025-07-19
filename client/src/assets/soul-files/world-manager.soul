@@ -1,0 +1,312 @@
+// World Manager - Controls global world state and rules
+component WorldManager {
+    // World configuration
+    int maxEntities = 100;
+    float worldEnergy = 1000.0;
+    float energyDecayRate = 0.1;
+    
+    // Environmental parameters
+    map worldLaws = {
+        "gravity": 9.81,
+        "maxSpeed": 200.0,
+        "energyConservation": true,
+        "evolutionEnabled": true
+    };
+    
+    // Statistics tracking
+    map statistics = {
+        "totalEntitiesCreated": 0,
+        "totalEntitiesDestroyed": 0,
+        "averageEntityLifespan": 0.0,
+        "peakEntityCount": 0
+    };
+    
+    // Event history
+    array worldEvents = [];
+    
+    fn init() {
+        log("World Manager initialized - Universe simulation starting");
+        
+        // Set up global event listeners
+        subscribe("entityCreated", "onEntityCreated");
+        subscribe("entityDestroyed", "onEntityDestroyed");
+        subscribe("transcendenceAchieved", "onTranscendence");
+        
+        // Initialize world laws
+        applyWorldLaws();
+    }
+    
+    fn update(float deltaTime) {
+        // Update world energy
+        updateWorldEnergy(deltaTime);
+        
+        // Monitor entity population
+        monitorPopulation();
+        
+        // Trigger world events
+        processWorldEvents(deltaTime);
+        
+        // Environmental effects
+        applyEnvironmentalEffects(deltaTime);
+        
+        // Clean up old events
+        cleanupEvents();
+    }
+    
+    fn updateWorldEnergy(float deltaTime) {
+        int entityCount = getEntityCount();
+        
+        // Energy consumption based on entity activity
+        float consumption = entityCount * energyDecayRate * deltaTime;
+        worldEnergy -= consumption;
+        
+        // Energy regeneration from natural sources
+        float regeneration = 5.0 * deltaTime;
+        worldEnergy += regeneration;
+        
+        // Clamp world energy
+        worldEnergy = max(worldEnergy, 0.0);
+        
+        // Crisis management
+        if (worldEnergy < 100.0) {
+            triggerEvent("energyCrisis", {"level": "critical", "energy": worldEnergy});
+        }
+    }
+    
+    fn monitorPopulation() {
+        int currentCount = getEntityCount();
+        
+        // Update peak count
+        if (currentCount > statistics["peakEntityCount"]) {
+            statistics["peakEntityCount"] = currentCount;
+        }
+        
+        // Population control
+        if (currentCount > maxEntities) {
+            triggerEvent("overpopulation", {"count": currentCount, "max": maxEntities});
+            // Could implement natural selection here
+        } else if (currentCount < 5) {
+            triggerEvent("extinction_risk", {"count": currentCount});
+            // Could spawn emergency entities
+        }
+    }
+    
+    fn processWorldEvents(float deltaTime) {
+        // Random world events
+        if (random() < 0.001 * deltaTime) { // Low probability per frame
+            triggerRandomEvent();
+        }
+        
+        // Periodic events
+        float time = getTime();
+        if (int(time) % 30 == 0 && int(time * 10) % 10 == 0) {
+            triggerEvent("energyBoost", {"amount": 50.0});
+        }
+    }
+    
+    fn applyEnvironmentalEffects(float deltaTime) {
+        array allEntities = getAllEntities();
+        
+        for (Entity entity : allEntities) {
+            // Apply gravity if entity has physics
+            if (entity.hasProperty("velocity")) {
+                float gravity = worldLaws["gravity"];
+                entity.velocity.y += gravity * deltaTime;
+                
+                // Terminal velocity
+                float maxSpeed = worldLaws["maxSpeed"];
+                if (magnitude(entity.velocity) > maxSpeed) {
+                    entity.velocity = normalize(entity.velocity) * maxSpeed;
+                }
+            }
+            
+            // Environmental energy effects
+            if (entity.hasProperty("energy")) {
+                // Energy drain in low-energy worlds
+                if (worldEnergy < 200.0) {
+                    entity.energy -= 2.0 * deltaTime;
+                }
+                
+                // Energy boost in high-energy worlds
+                if (worldEnergy > 800.0) {
+                    entity.energy += 1.0 * deltaTime;
+                }
+            }
+        }
+    }
+    
+    fn triggerRandomEvent() {
+        array events = [
+            "meteorStorm",
+            "energyWave",
+            "temporalRift",
+            "consciousnessFlux",
+            "dimensionalShift"
+        ];
+        
+        string eventType = events[randomInt(0, events.length)];
+        
+        switch (eventType) {
+            case "meteorStorm":
+                // Create temporary hazards
+                for (int i = 0; i < 5; i++) {
+                    vec2 pos = randomVec2(0, 800, 0, 600);
+                    Entity meteor = createEntity("Hazard", pos);
+                    meteor.lifetime = 10.0;
+                    meteor.damage = 20.0;
+                }
+                log("Meteor storm detected! Take cover!");
+                break;
+                
+            case "energyWave":
+                // Boost all entities
+                array entities = getAllEntities();
+                for (Entity e : entities) {
+                    if (e.hasProperty("energy")) {
+                        e.energy += 25.0;
+                    }
+                }
+                log("Energy wave sweeps across the world!");
+                break;
+                
+            case "consciousnessFlux":
+                // Boost consciousness entities
+                array entities = getAllEntities();
+                for (Entity e : entities) {
+                    if (e.type == "Conscience") {
+                        e.awarenessLevel += 10.0;
+                    }
+                }
+                log("Consciousness flux enhances all thinking entities!");
+                break;
+        }
+        
+        // Record the event
+        recordEvent(eventType, getTime());
+    }
+    
+    fn applyWorldLaws() {
+        // Set global physics parameters
+        setGlobalParameter("gravity", worldLaws["gravity"]);
+        setGlobalParameter("maxSpeed", worldLaws["maxSpeed"]);
+        
+        // Energy conservation law
+        if (worldLaws["energyConservation"]) {
+            enableEnergyConservation(true);
+        }
+        
+        // Evolution system
+        if (worldLaws["evolutionEnabled"]) {
+            enableEvolution(true);
+        }
+        
+        log("World laws applied: " + worldLaws.toString());
+    }
+    
+    // Event handlers
+    fn onEntityCreated(map eventData) {
+        statistics["totalEntitiesCreated"]++;
+        
+        recordEvent("entityCreated", getTime(), {
+            "entityId": eventData["id"],
+            "type": eventData["type"],
+            "position": eventData["position"]
+        });
+        
+        log("Entity created: " + eventData["type"] + " (Total created: " + statistics["totalEntitiesCreated"] + ")");
+    }
+    
+    fn onEntityDestroyed(map eventData) {
+        statistics["totalEntitiesDestroyed"]++;
+        
+        // Calculate average lifespan
+        float totalLifespan = statistics["averageEntityLifespan"] * (statistics["totalEntitiesDestroyed"] - 1);
+        totalLifespan += eventData.getOrDefault("lifespan", 0.0);
+        statistics["averageEntityLifespan"] = totalLifespan / statistics["totalEntitiesDestroyed"];
+        
+        recordEvent("entityDestroyed", getTime(), eventData);
+        
+        log("Entity destroyed (Average lifespan: " + statistics["averageEntityLifespan"] + "s)");
+    }
+    
+    fn onTranscendence(map eventData) {
+        // Major world event - consciousness evolution
+        worldEnergy += 100.0; // Transcendence adds energy to world
+        
+        recordEvent("transcendence", getTime(), eventData);
+        
+        // Trigger chain reaction - nearby entities get awareness boost
+        Entity transcendedEntity = getEntity(eventData["entity"]);
+        if (transcendedEntity != null) {
+            array nearby = getEntitiesInRadius(transcendedEntity.position, 150.0);
+            for (Entity e : nearby) {
+                if (e.type == "Conscience") {
+                    e.awarenessLevel += 5.0;
+                }
+            }
+        }
+        
+        log("TRANSCENDENCE EVENT: Reality itself shifts as consciousness evolves!");
+    }
+    
+    fn recordEvent(string type, float timestamp, map data = {}) {
+        map event = {
+            "type": type,
+            "timestamp": timestamp,
+            "data": data
+        };
+        
+        worldEvents.add(event);
+    }
+    
+    fn cleanupEvents() {
+        // Keep only recent events (last 100)
+        if (worldEvents.length > 100) {
+            worldEvents = worldEvents.slice(worldEvents.length - 100, worldEvents.length);
+        }
+    }
+    
+    fn triggerEvent(string type, map data) {
+        broadcast(type, data);
+        recordEvent(type, getTime(), data);
+    }
+    
+    // Configuration methods
+    fn setWorldLaw(string law, float value) {
+        worldLaws[law] = value;
+        applyWorldLaws();
+        log("World law updated: " + law + " = " + value);
+    }
+    
+    fn getWorldStatus() -> map {
+        return {
+            "energy": worldEnergy,
+            "entityCount": getEntityCount(),
+            "maxEntities": maxEntities,
+            "statistics": statistics,
+            "laws": worldLaws,
+            "recentEvents": worldEvents.slice(max(0, worldEvents.length - 10), worldEvents.length)
+        };
+    }
+    
+    fn resetWorld() {
+        worldEnergy = 1000.0;
+        statistics = {
+            "totalEntitiesCreated": 0,
+            "totalEntitiesDestroyed": 0,
+            "averageEntityLifespan": 0.0,
+            "peakEntityCount": 0
+        };
+        worldEvents.clear();
+        
+        // Destroy all entities
+        array entities = getAllEntities();
+        for (Entity e : entities) {
+            if (e.type != "WorldManager") {
+                destroyEntity(e);
+            }
+        }
+        
+        log("World reset complete - Universe reborn!");
+    }
+}

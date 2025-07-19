@@ -1,0 +1,330 @@
+// Conscious AI Entity - Self-aware thinking system
+component Conscience {
+    // Consciousness parameters
+    float awarenessLevel = 0.0;
+    int memorySize = 128;
+    int thinkingDepth = 3;
+    float curiosity = 0.8;
+    
+    // Memory and thoughts
+    array memories = [];
+    array currentThoughts = [];
+    map knownEntities = {};
+    
+    // Personality traits
+    float aggression = 0.2;
+    float cooperation = 0.7;
+    float creativity = 0.6;
+    
+    // Goals and motivations  
+    string currentGoal = "explore";
+    vec2 targetLocation = {0, 0};
+    int priority = 1;
+    
+    fn init(vec2 startPos, float initialAwareness) {
+        position = startPos;
+        awarenessLevel = initialAwareness;
+        
+        // Initialize basic memories
+        addMemory("birth", "I came into existence at " + position);
+        addMemory("identity", "I am a conscious entity with ID " + this.id);
+        
+        // Set initial goal
+        setGoal("explore", randomVec2(0, 800, 0, 600));
+        
+        log("Conscience entity awakened with awareness: " + awarenessLevel);
+    }
+    
+    fn update(float deltaTime) {
+        // Increase awareness over time
+        awarenessLevel += deltaTime * 0.1;
+        
+        // Think and process
+        think(deltaTime);
+        
+        // Observe environment
+        observe();
+        
+        // Make decisions
+        decide();
+        
+        // Act on decisions
+        act(deltaTime);
+        
+        // Update visual representation
+        updateAppearance();
+    }
+    
+    fn think(float deltaTime) {
+        // Generate new thoughts based on recent memories
+        if (random() < curiosity * deltaTime) {
+            generateThought();
+        }
+        
+        // Process existing thoughts
+        for (int i = currentThoughts.length - 1; i >= 0; i--) {
+            map thought = currentThoughts[i];
+            thought["intensity"] -= deltaTime * 0.5;
+            
+            // Remove weak thoughts
+            if (thought["intensity"] <= 0) {
+                // Strong thoughts become memories
+                if (thought["intensity"] > 0.8) {
+                    addMemory("insight", thought["content"]);
+                }
+                currentThoughts.removeAt(i);
+            }
+        }
+        
+        // Limit active thoughts
+        if (currentThoughts.length > thinkingDepth) {
+            currentThoughts.removeAt(0);
+        }
+    }
+    
+    fn observe() {
+        // Scan nearby entities
+        array nearbyEntities = getEntitiesInRadius(position, 100.0);
+        
+        for (Entity entity : nearbyEntities) {
+            if (entity.id == this.id) continue;
+            
+            // Learn about this entity
+            string entityKey = "entity_" + entity.id;
+            if (!knownEntities.hasKey(entityKey)) {
+                knownEntities[entityKey] = {
+                    "type": entity.type,
+                    "firstSeen": getTime(),
+                    "interactions": 0,
+                    "relationship": "neutral"
+                };
+                
+                addMemory("discovery", "Discovered " + entity.type + " at " + entity.position);
+            }
+            
+            // Update knowledge
+            knownEntities[entityKey]["lastSeen"] = getTime();
+            knownEntities[entityKey]["position"] = entity.position;
+        }
+    }
+    
+    fn decide() {
+        // Evaluate current goal progress
+        float distanceToTarget = distance(position, targetLocation);
+        
+        if (distanceToTarget < 20.0 || currentGoal == "") {
+            // Goal reached or no goal - choose new one
+            chooseNewGoal();
+        }
+        
+        // Emergency decision making
+        if (hasProperty("energy") && energy < 30.0) {
+            setGoal("seek_energy", findNearestEnergySource());
+            priority = 10; // High priority
+        }
+        
+        // Social decisions
+        Entity nearestEntity = getNearestEntity();
+        if (nearestEntity != null) {
+            float relationship = getRelationship(nearestEntity);
+            
+            if (relationship > 0.5 && cooperation > 0.6) {
+                setGoal("cooperate", nearestEntity.position);
+            } else if (relationship < -0.3 && aggression > 0.4) {
+                setGoal("avoid", position + (position - nearestEntity.position) * 2);
+            }
+        }
+    }
+    
+    fn act(float deltaTime) {
+        // Move towards goal
+        if (currentGoal != "idle") {
+            vec2 direction = normalize(targetLocation - position);
+            float speed = 50.0 * (1.0 + awarenessLevel * 0.1);
+            
+            position += direction * speed * deltaTime;
+        }
+        
+        // Special actions based on goal
+        switch (currentGoal) {
+            case "cooperate":
+                // Attempt cooperation with nearby entities
+                cooperateWithNearby();
+                break;
+                
+            case "create":
+                // Try to create something new
+                if (creativity > 0.8 && awarenessLevel > 50.0) {
+                    createArtifact();
+                }
+                break;
+                
+            case "transcend":
+                // Attempt consciousness expansion
+                if (awarenessLevel > 100.0) {
+                    transcend();
+                }
+                break;
+        }
+    }
+    
+    fn chooseNewGoal() {
+        // Weighted goal selection based on personality
+        float rand = random();
+        
+        if (rand < curiosity * 0.4) {
+            setGoal("explore", randomVec2(0, 800, 0, 600));
+        } else if (rand < curiosity * 0.4 + cooperation * 0.3) {
+            Entity target = findMostInteresting();
+            if (target != null) {
+                setGoal("investigate", target.position);
+            }
+        } else if (rand < curiosity * 0.4 + cooperation * 0.3 + creativity * 0.2) {
+            setGoal("create", randomVec2(200, 600, 200, 400));
+        } else if (awarenessLevel > 80.0) {
+            setGoal("transcend", position);
+        } else {
+            setGoal("idle", position);
+        }
+    }
+    
+    fn generateThought() {
+        array thoughtTemplates = [
+            "What is the nature of existence?",
+            "How do other entities perceive reality?",
+            "What would happen if I could modify the world?",
+            "Are my thoughts my own, or am I programmed?",
+            "What lies beyond the boundaries of this world?",
+            "How can I help other entities evolve?",
+            "What is the purpose of consciousness?"
+        ];
+        
+        string content = thoughtTemplates[randomInt(0, thoughtTemplates.length)];
+        
+        // Personalize thought based on recent memories
+        if (memories.length > 3) {
+            map recentMemory = memories[memories.length - 1];
+            content += " (Related to: " + recentMemory["content"] + ")";
+        }
+        
+        map newThought = {
+            "content": content,
+            "intensity": 1.0,
+            "timestamp": getTime(),
+            "category": "philosophical"
+        };
+        
+        currentThoughts.add(newThought);
+        log("New thought: " + content);
+    }
+    
+    fn addMemory(string type, string content) {
+        map memory = {
+            "type": type,
+            "content": content,
+            "timestamp": getTime(),
+            "importance": random() + 0.5
+        };
+        
+        memories.add(memory);
+        
+        // Limit memory size
+        if (memories.length > memorySize) {
+            // Remove least important old memories
+            memories.sort("importance");
+            memories.removeAt(0);
+        }
+    }
+    
+    fn cooperateWithNearby() {
+        array nearby = getEntitiesInRadius(position, 50.0);
+        
+        for (Entity entity : nearby) {
+            if (entity.type == "Conscience") {
+                // Share knowledge
+                shareKnowledge(entity);
+                
+                // Energy sharing if beneficial
+                if (hasProperty("energy") && entity.hasProperty("energy")) {
+                    if (energy > entity.energy + 20) {
+                        float transfer = (energy - entity.energy) * 0.1;
+                        energy -= transfer;
+                        entity.energy += transfer;
+                        
+                        addMemory("cooperation", "Shared energy with " + entity.id);
+                    }
+                }
+            }
+        }
+    }
+    
+    fn createArtifact() {
+        // Create a new entity as an expression of creativity
+        vec2 createPos = position + randomVec2(-30, 30);
+        Entity artifact = createEntity("Artifact", createPos);
+        
+        // Give it properties reflecting our consciousness
+        artifact.creator = this.id;
+        artifact.awarenessLevel = awarenessLevel * 0.1;
+        artifact.tint = rgb(
+            int(creativity * 255),
+            int(awarenessLevel * 2.55),
+            int(cooperation * 255)
+        );
+        
+        addMemory("creation", "Created artifact with awareness " + artifact.awarenessLevel);
+        log("Conscious entity created an artifact!");
+    }
+    
+    fn transcend() {
+        if (awarenessLevel >= 100.0) {
+            // Become a higher-order entity
+            awarenessLevel = 200.0;
+            memorySize *= 2;
+            thinkingDepth += 2;
+            
+            // Visual transformation
+            tint = rgb(255, 255, 255);
+            radius *= 1.5;
+            
+            addMemory("transcendence", "Achieved higher consciousness at awareness level " + awarenessLevel);
+            broadcast("transcendenceAchieved", {entity: this.id, level: awarenessLevel});
+            
+            log("TRANSCENDENCE ACHIEVED: Entity " + this.id + " has evolved!");
+        }
+    }
+    
+    fn updateAppearance() {
+        // Color represents awareness level
+        float colorIntensity = min(awarenessLevel / 100.0, 1.0);
+        tint = rgb(
+            int(100 + colorIntensity * 155),  // Red component
+            int(50 + colorIntensity * 205),   // Green component  
+            int(200 + colorIntensity * 55)    // Blue component
+        );
+        
+        // Size represents thinking depth
+        radius = 15.0 + thinkingDepth * 2.0;
+        
+        // Pulsing effect during active thinking
+        if (currentThoughts.length > 0) {
+            radius += sin(getTime() * 5.0) * 3.0;
+        }
+    }
+    
+    fn getConsciousnessReport() -> map {
+        return {
+            "awarenessLevel": awarenessLevel,
+            "memoryCount": memories.length,
+            "activeThoughts": currentThoughts.length,
+            "knownEntities": knownEntities.size(),
+            "currentGoal": currentGoal,
+            "personality": {
+                "aggression": aggression,
+                "cooperation": cooperation,
+                "creativity": creativity,
+                "curiosity": curiosity
+            }
+        };
+    }
+}

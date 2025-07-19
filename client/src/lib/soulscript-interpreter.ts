@@ -1,5 +1,30 @@
 import { ComponentDeclaration, FieldDeclaration, MethodDeclaration, Statement, Expression, BinaryExpression, Literal, Identifier } from './soulscript-parser';
 
+// Advanced SoulScript Runtime Types
+export interface SoulVariable {
+  name: string;
+  type: 'float' | 'int' | 'string' | 'bool' | 'vec2' | 'color' | 'array' | 'map' | 'Entity';
+  value: any;
+}
+
+export interface SoulFunction {
+  name: string;
+  parameters: string[];
+  returnType?: string;
+  body: Statement[];
+}
+
+export interface WorldEntity {
+  id: number;
+  type: string;
+  name: string;
+  position: { x: number; y: number };
+  properties: Map<string, any>;
+  component?: RuntimeComponent;
+  isActive: boolean;
+  lifespan: number;
+}
+
 export interface RuntimeComponent {
   name: string;
   fields: Map<string, any>;
@@ -18,6 +43,69 @@ export class SoulScriptInterpreter {
   private components: Map<string, RuntimeComponent> = new Map();
   private logs: SimulationLog[] = [];
   private deltaTime: number = 0.016; // 60 FPS
+  private globalVariables: Map<string, any> = new Map();
+  private worldEntities: Map<number, WorldEntity> = new Map();
+  private eventHandlers: Map<string, string[]> = new Map();
+  private builtinFunctions: Map<string, Function> = new Map();
+  private nextEntityId: number = 1;
+  private worldTime: number = 0;
+
+  constructor() {
+    this.initializeBuiltinFunctions();
+  }
+
+  private initializeBuiltinFunctions() {
+    // Math functions
+    this.builtinFunctions.set('sin', (x: number) => Math.sin(x));
+    this.builtinFunctions.set('cos', (x: number) => Math.cos(x));
+    this.builtinFunctions.set('sqrt', (x: number) => Math.sqrt(x));
+    this.builtinFunctions.set('abs', (x: number) => Math.abs(x));
+    this.builtinFunctions.set('min', (a: number, b: number) => Math.min(a, b));
+    this.builtinFunctions.set('max', (a: number, b: number) => Math.max(a, b));
+    this.builtinFunctions.set('clamp', (x: number, min: number, max: number) => Math.max(min, Math.min(max, x)));
+    this.builtinFunctions.set('random', () => Math.random());
+    this.builtinFunctions.set('randomInt', (min: number, max: number) => Math.floor(Math.random() * (max - min)) + min);
+    
+    // Vector functions
+    this.builtinFunctions.set('randomVec2', (minX: number, maxX: number, minY?: number, maxY?: number) => ({
+      x: Math.random() * (maxX - minX) + minX,
+      y: Math.random() * ((maxY || maxX) - (minY || minX)) + (minY || minX)
+    }));
+    this.builtinFunctions.set('distance', (a: any, b: any) => 
+      Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+    );
+    this.builtinFunctions.set('normalize', (v: any) => {
+      const mag = Math.sqrt(v.x ** 2 + v.y ** 2);
+      return mag > 0 ? { x: v.x / mag, y: v.y / mag } : { x: 0, y: 0 };
+    });
+    this.builtinFunctions.set('magnitude', (v: any) => Math.sqrt(v.x ** 2 + v.y ** 2));
+    
+    // Color functions
+    this.builtinFunctions.set('rgb', (r: number, g: number, b: number) => ({ r, g, b }));
+    
+    // Entity functions
+    this.builtinFunctions.set('createEntity', (type: string, position: any) => this.createEntity(type, position));
+    this.builtinFunctions.set('getEntity', (id: number) => this.worldEntities.get(id));
+    this.builtinFunctions.set('getAllEntities', () => Array.from(this.worldEntities.values()));
+    this.builtinFunctions.set('getEntityCount', () => this.worldEntities.size);
+    this.builtinFunctions.set('destroyEntity', (entity: any) => this.destroyEntity(entity));
+    this.builtinFunctions.set('getEntitiesInRadius', (pos: any, radius: number) => 
+      Array.from(this.worldEntities.values()).filter(e => 
+        Math.sqrt((e.position.x - pos.x) ** 2 + (e.position.y - pos.y) ** 2) <= radius
+      )
+    );
+    
+    // Time functions
+    this.builtinFunctions.set('getTime', () => this.worldTime);
+    
+    // Event functions
+    this.builtinFunctions.set('broadcast', (event: string, data: any) => this.broadcast(event, data));
+    this.builtinFunctions.set('subscribe', (event: string, handler: string) => this.subscribe(event, handler));
+    
+    // Utility functions
+    this.builtinFunctions.set('log', (message: string) => this.log('info', message.toString()));
+    this.builtinFunctions.set('lerp', (a: number, b: number, t: number) => a + (b - a) * t);
+  }
 
   createComponent(declaration: ComponentDeclaration, instanceName?: string): RuntimeComponent {
     const component: RuntimeComponent = {
@@ -64,10 +152,133 @@ export class SoulScriptInterpreter {
   }
 
   updateAllComponents(): void {
+    this.worldTime += this.deltaTime;
+    
+    // Update all world entities
+    for (const entity of this.worldEntities.values()) {
+      if (entity.component && entity.isActive) {
+        this.updateComponent(entity.component.name);
+      }
+      entity.lifespan += this.deltaTime;
+    }
+    
+    // Update traditional components
     for (const [name, component] of this.components) {
       if (component.isActive) {
         this.updateComponent(name);
       }
+    }
+  }
+
+  // Advanced entity management
+  createEntity(type: string, position: { x: number; y: number }): WorldEntity {
+    const entity: WorldEntity = {
+      id: this.nextEntityId++,
+      type,
+      name: `${type}_${this.nextEntityId - 1}`,
+      position,
+      properties: new Map(),
+      isActive: true,
+      lifespan: 0
+    };
+
+    this.worldEntities.set(entity.id, entity);
+    
+    // Broadcast entity creation
+    this.broadcast('entityCreated', {
+      id: entity.id,
+      type: entity.type,
+      position: entity.position
+    });
+
+    this.log('info', `Entity created: ${entity.name} at (${position.x}, ${position.y})`);
+    return entity;
+  }
+
+  destroyEntity(entity: WorldEntity | number): void {
+    const id = typeof entity === 'number' ? entity : entity.id;
+    const worldEntity = this.worldEntities.get(id);
+    
+    if (worldEntity) {
+      // Call onDestroy if component has it
+      if (worldEntity.component) {
+        const destroyMethod = worldEntity.component.methods.get('onDestroy');
+        if (destroyMethod) {
+          try {
+            this.executeMethod(worldEntity.component, destroyMethod, []);
+          } catch (error) {
+            this.log('error', `Error in onDestroy for ${worldEntity.name}: ${error}`);
+          }
+        }
+      }
+
+      // Broadcast destruction
+      this.broadcast('entityDestroyed', {
+        id: worldEntity.id,
+        type: worldEntity.type,
+        position: worldEntity.position,
+        lifespan: worldEntity.lifespan
+      });
+
+      this.worldEntities.delete(id);
+      this.log('info', `Entity destroyed: ${worldEntity.name}`);
+    }
+  }
+
+  // Event system
+  subscribe(event: string, handler: string): void {
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, []);
+    }
+    this.eventHandlers.get(event)!.push(handler);
+  }
+
+  broadcast(event: string, data: any): void {
+    const handlers = this.eventHandlers.get(event);
+    if (handlers) {
+      for (const handler of handlers) {
+        // Find component that has this handler method
+        for (const component of this.components.values()) {
+          const method = component.methods.get(handler);
+          if (method) {
+            try {
+              this.executeMethod(component, method, [data]);
+            } catch (error) {
+              this.log('error', `Event handler error: ${error}`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Execute SoulScript from file content
+  executeSoulScript(soulCode: string): void {
+    try {
+      // Parse the SoulScript code
+      const parser = new (window as any).SoulScriptParser();
+      const ast = parser.parse(soulCode);
+      
+      // Execute components
+      if (ast.components) {
+        for (const componentDecl of ast.components) {
+          const component = this.createComponent(componentDecl);
+          
+          // Create a world entity for this component
+          const entity = this.createEntity(componentDecl.name, { x: 100 + Math.random() * 600, y: 100 + Math.random() * 400 });
+          entity.component = component;
+          
+          // Initialize the component if it has an init method
+          const initMethod = component.methods.get('init');
+          if (initMethod) {
+            this.executeMethod(component, initMethod, [entity.position]);
+          }
+        }
+      }
+      
+      this.log('info', 'SoulScript code executed successfully');
+    } catch (error) {
+      this.log('error', `SoulScript execution failed: ${error}`);
     }
   }
 

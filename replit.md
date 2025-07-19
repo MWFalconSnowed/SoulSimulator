@@ -7,6 +7,16 @@ SoulScript IDE is a fantasy-themed universe simulation engine built as a full-st
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Interface Design: Focus on beautiful, polished UI inspired by Baldur's Gate with amber/golden color scheme.
+
+## Recent Changes
+
+- **July 19, 2025**: Complete interface redesign with modern amber/golden theme
+- Transformed all panels (left sidebar, right sidebar, header, status bar) with consistent styling
+- Replaced glass panels with elegant gradients and proper contrast
+- Updated buttons with modern rounded design and hover effects
+- Enhanced isometric world view with better overlays and controls
+- User confirmed satisfaction with the new professional appearance
 
 ## System Architecture
 

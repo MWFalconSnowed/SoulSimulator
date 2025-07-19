@@ -151,6 +151,41 @@ export class SoulScriptInterpreter {
         }
       }, delay * 1000);
     });
+
+    // Audio functions
+    this.builtinFunctions.set('playSound', (clipId: string, volume?: number) => {
+      // Integration with audio engine would go here
+      this.log('info', `Playing sound: ${clipId}`);
+    });
+    this.builtinFunctions.set('playMusic', (clipId: string, fadeTime?: number) => {
+      this.log('info', `Playing music: ${clipId}`);
+    });
+    this.builtinFunctions.set('stopMusic', (fadeTime?: number) => {
+      this.log('info', 'Stopping music');
+    });
+    this.builtinFunctions.set('playAmbient', (clipId: string) => {
+      this.log('info', `Playing ambient: ${clipId}`);
+    });
+
+    // Physics functions
+    this.builtinFunctions.set('setPhysicsBody', (bodyType: string, mass: number) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('physicsType', bodyType);
+        this.currentEntity.properties.set('mass', mass);
+        this.log('info', `Physics body set: ${bodyType}, mass: ${mass}`);
+      }
+    });
+    this.builtinFunctions.set('applyForce', (forceX: number, forceY: number) => {
+      if (this.currentEntity) {
+        this.log('info', `Applying force: ${forceX}, ${forceY}`);
+      }
+    });
+    this.builtinFunctions.set('setVelocity', (velX: number, velY: number) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('velocityX', velX);
+        this.currentEntity.properties.set('velocityY', velY);
+      }
+    });
   }
 
   createComponent(declaration: ComponentDeclaration, instanceName?: string): RuntimeComponent {

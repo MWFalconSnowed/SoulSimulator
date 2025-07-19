@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code, Terminal, FolderOpen, Save } from "lucide-react";
+import { Code, Terminal, FolderOpen, Save, Volume2 } from "lucide-react";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { FantasyButton } from "@/components/ui/fantasy-button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,8 @@ import { useWorldStore } from "@/stores/world-store";
 import { Separator } from "@/components/ui/separator";
 import { SoulScriptTemplates } from "@/components/soulscript-templates";
 import { SoulFileManager } from "@/components/soul-file-manager";
+import { AudioPanel } from "@/components/audio-panel";
+import { SaveLoadPanel } from "@/components/save-load-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function RightSidebar() {
@@ -83,10 +85,20 @@ export function RightSidebar() {
               </div>
             </div>
             
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="editor">Editor</TabsTrigger>
               <TabsTrigger value="files">.soul</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
+            </TabsList>
+            <TabsList className="grid w-full grid-cols-3 mt-2">
+              <TabsTrigger value="audio">
+                <Volume2 className="w-3 h-3 mr-1" />
+                Audio
+              </TabsTrigger>
+              <TabsTrigger value="save">
+                <Save className="w-3 h-3 mr-1" />
+                Save
+              </TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
           </div>
@@ -131,6 +143,14 @@ export function RightSidebar() {
 
           <TabsContent value="templates" className="flex-1">
             <SoulScriptTemplates onTemplateSelect={handleTemplateSelect} />
+          </TabsContent>
+
+          <TabsContent value="audio" className="flex-1 overflow-y-auto">
+            <AudioPanel />
+          </TabsContent>
+
+          <TabsContent value="save" className="flex-1 overflow-y-auto">
+            <SaveLoadPanel />
           </TabsContent>
 
           <TabsContent value="logs" className="flex-1 p-4">

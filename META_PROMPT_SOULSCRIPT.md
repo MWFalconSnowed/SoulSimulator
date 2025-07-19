@@ -43,6 +43,20 @@ component MysticalEntity {
 - **mystical-sanctuary.soul**: Scène complète Baldur's Gate II
 - **demon-animator.soul**: Système d'animation de sprites avancé avec états multiples
 
+### 🎵 **Moteur Audio Intégré**
+- **Gestion multi-canaux**: Musique, effets sonores, ambiance, voix
+- **Crossfade automatique**: Transitions fluides entre musiques
+- **Contrôles de volume**: Master et par canal avec interface graphique
+- **Support streaming**: Chargement asynchrone des fichiers audio
+- **Intégration SoulScript**: `playSound()`, `playMusic()`, `setVolume()`
+
+### 💾 **Système de Sauvegarde Avancé**
+- **Sauvegarde complète**: Entités, variables globales, fichiers .soul
+- **Auto-sauvegarde**: Système automatique toutes les 30 secondes
+- **Export/Import**: Fichiers .soulworld pour partage communautaire
+- **Cloud + Local**: Synchronisation API avec backup localStorage
+- **Historique complet**: Gestion des versions avec horodatage
+
 ### 🎨 **Interface IDE Mystique**
 - **Panneaux**: Éditeur, gestionnaire .soul, templates, logs
 - **Thème**: Dark fantasy avec effets de verre ambre/doré
@@ -76,6 +90,14 @@ getTime(), deltaTime, clamp(), lerp()
 // Animation et rendu
 setSpriteFrame(), setFlipX(), setFlipY(), setScale()
 setRotation(), setOpacity(), scheduleCallback()
+
+// Audio et son
+playSound(), playMusic(), stopMusic(), playAmbient()
+setVolume(), muteChannel()
+
+// Physique et collisions
+setPhysicsBody(), applyForce(), setVelocity()
+detectCollision(), onCollision()
 
 // Particules et effets
 createParticle(), createExplosion()

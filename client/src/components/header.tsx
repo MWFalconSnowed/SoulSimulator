@@ -1,4 +1,4 @@
-import { Play, Pause, Square, Clock, Sparkles } from "lucide-react";
+import { Play, Pause, Square, Clock, Sparkles, Flame } from "lucide-react";
 import { FantasyButton } from "@/components/ui/fantasy-button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useSimulation } from "@/hooks/use-simulation";
@@ -62,6 +62,16 @@ export function Header() {
         </div>
         
         <div className="flex items-center space-x-4">
+          <Link href="/temple">
+            <FantasyButton
+              variant="gold"
+              glowing
+            >
+              <Flame className="mr-2 h-4 w-4" />
+              Temple Cosmique
+            </FantasyButton>
+          </Link>
+
           <Link href="/meta-prompt">
             <FantasyButton
               variant="purple"

@@ -6,12 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import IDE from "@/pages/ide";
 import NotFound from "@/pages/not-found";
 import MetaPrompt from "@/pages/meta-prompt";
+import TempleAwakening from "@/pages/temple-awakening";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={IDE} />
       <Route path="/meta-prompt" component={MetaPrompt} />
+      <Route path="/temple" component={TempleAwakening} />
       <Route component={NotFound} />
     </Switch>
   );

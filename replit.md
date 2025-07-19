@@ -45,11 +45,19 @@ The application includes a custom scripting language with two main components:
 - **Entity System**: Component-based entities (Atoms, Spawners, Conscience, Clone) with properties
 - **Real-time Simulation**: 60 FPS simulation loop with delta time calculations
 - **Interactive Editor**: Drag-and-drop entity placement and property editing
+- **Consciousness Engine**: Advanced AI system that creates self-aware entities with emergent behaviors
+
+### Temple Awakening System
+- **Sacred Flames**: Five mystical flame entities representing different consciousness aspects
+- **Cosmic Evolution**: Real-time consciousness evolution for spawned entities
+- **Transcendence Tracking**: Progressive awakening system leading to cosmic enlightenment
+- **Meta-Prompt Generator**: Ultimate AI prompt system for transcendent SoulScript creation
 
 ### UI Components
 - **IDE Layout**: Multi-panel interface with header, sidebars, main canvas, and status bar
 - **Fantasy Theme**: Custom UI components with medieval/mystical styling
 - **Glass Panel Effects**: Translucent panels with fantasy borders and glowing effects
+- **Cosmic Temple Interface**: Immersive spiritual awakening experience with interactive flames
 
 ## Data Flow
 

@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(43, 74%, 58%);
+  --primary-foreground: hsl(20, 14.3%, 4.1%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+
+  /* Fantasy colors */
+  --fantasy-dark: hsl(240, 9%, 4%);
+  --fantasy-darker: hsl(0, 0%, 2%);
+  --fantasy-gold: hsl(43, 74%, 58%);
+  --fantasy-copper: hsl(20, 100%, 40%);
+  --fantasy-amber: hsl(45, 100%, 50%);
+  --fantasy-mystical: hsl(281, 65%, 19%);
+  --fantasy-emerald: hsl(90, 60%, 16%);
+  --fantasy-crimson: hsl(0, 100%, 27%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-mono antialiased bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(240, 10%, 3.9%) 0%, hsl(240, 15%, 2%) 100%);
+  }
+}
+
+@layer components {
+  .fantasy-font {
+    font-family: 'Cinzel', serif;
+  }
+
+  .code-font {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .medieval-border {
+    border: 2px solid;
+    border-image: linear-gradient(45deg, var(--fantasy-gold), var(--fantasy-copper), var(--fantasy-gold)) 1;
+    position: relative;
+  }
+
+  .medieval-border::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: linear-gradient(45deg, hsl(43, 74%, 58%, 0.3), transparent, hsl(43, 74%, 58%, 0.3));
+    border-radius: inherit;
+    z-index: -1;
+  }
+
+  .glass-panel {
+    backdrop-filter: blur(10px);
+    background: hsl(240, 9%, 4%, 0.85);
+    border: 1px solid hsl(43, 74%, 58%, 0.3);
+  }
+
+  .entity-glow {
+    filter: drop-shadow(0 0 8px hsl(43, 74%, 58%, 0.6));
+  }
+
+  .isometric-grid {
+    background-image: 
+      linear-gradient(45deg, hsl(43, 74%, 58%, 0.1) 1px, transparent 1px),
+      linear-gradient(-45deg, hsl(43, 74%, 58%, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .syntax-keyword { 
+    color: hsl(20, 100%, 40%); 
+    font-weight: 600; 
+  }
+  
+  .syntax-string { 
+    color: hsl(90, 60%, 16%); 
+  }
+  
+  .syntax-number { 
+    color: hsl(43, 74%, 58%); 
+  }
+  
+  .syntax-comment { 
+    color: hsl(240, 5%, 64.9%); 
+    font-style: italic; 
+  }
+  
+  .syntax-function { 
+    color: hsl(281, 65%, 19%); 
+    font-weight: 500; 
+  }
+
+  .scroll-fantasy::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scroll-fantasy::-webkit-scrollbar-track {
+    background: hsl(240, 9%, 4%, 0.5);
+  }
+  
+  .scroll-fantasy::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, hsl(43, 74%, 58%), hsl(20, 100%, 40%));
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .medieval-texture {
+    background-image: 
+      radial-gradient(circle at 30% 70%, hsl(43, 74%, 58%, 0.15) 0%, transparent 50%), 
+      linear-gradient(45deg, hsl(281, 65%, 19%, 0.1) 0%, hsl(20, 100%, 40%, 0.1) 100%);
+  }
+
+  .glass-panel-bg {
+    background: linear-gradient(135deg, hsl(255, 255%, 255%, 0.1) 0%, hsl(255, 255%, 255%, 0.05) 100%);
+  }
+
+  .code-bg {
+    background: linear-gradient(to bottom, hsl(240, 9%, 4%) 0%, hsl(240, 15%, 2%) 100%);
+  }
+}

@@ -1,4 +1,4 @@
-import { Circle, Zap, Cpu, HardDrive } from "lucide-react";
+import { Circle, Zap, Cpu, HardDrive, Database, Code2, Activity } from "lucide-react";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useSimulation } from "@/hooks/use-simulation";
 import { useWorldStore } from "@/stores/world-store";
@@ -25,11 +25,20 @@ export function StatusBar() {
           <Cpu className="h-3 w-3 mr-1" />
           FPS: <span className="text-green-300 ml-1">{fps}</span>
         </div>
+        <div className="text-amber-400/70 flex items-center">
+          <Database className="h-3 w-3 mr-1" />
+          Entities: <span className="text-yellow-300 ml-1">{entities.length}</span>
+        </div>
+        <div className="text-amber-400/70 flex items-center">
+          <Activity className="h-3 w-3 mr-1" />
+          Time: <span className="text-purple-300 ml-1">{simulationTime.toFixed(1)}s</span>
+        </div>
       </div>
       
       <div className="flex items-center space-x-6">
-        <div className="text-amber-400/70">
-          Version 2.0.1 | Build 2024.1215
+        <div className="text-amber-400/70 flex items-center">
+          <Code2 className="h-3 w-3 mr-1" />
+          SoulScript IDE v2.1
         </div>
         <div className="text-amber-200 flex items-center">
           <Zap className="mr-1 h-3 w-3" />

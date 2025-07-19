@@ -3,6 +3,7 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { FantasyButton } from "@/components/ui/fantasy-button";
 import { useWorldStore } from "@/stores/world-store";
 import { Badge } from "@/components/ui/badge";
+import { WorldTools } from "@/components/world-tools";
 
 const componentTypes = [
   { 
@@ -186,6 +187,9 @@ export function LeftSidebar() {
           })}
         </div>
       </div>
+      
+      {/* World Tools at bottom */}
+      <WorldTools />
     </div>
   );
 }

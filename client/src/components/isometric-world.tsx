@@ -5,6 +5,7 @@ import { FantasyButton } from "@/components/ui/fantasy-button";
 import { useWorldStore } from "@/stores/world-store";
 import { useSimulation } from "@/hooks/use-simulation";
 import { useMapByCode } from "@/hooks/use-maps";
+import { AnimationControls } from "@/components/animation-controls";
 import map003Path from "@assets/image_1752918218266.png";
 
 export function IsometricWorld() {
@@ -384,6 +385,9 @@ export function IsometricWorld() {
           </button>
         </div>
       </div>
+      
+      {/* Animation Controls */}
+      <AnimationControls />
     </div>
   );
 }

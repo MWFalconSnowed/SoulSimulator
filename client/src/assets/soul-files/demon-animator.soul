@@ -1,0 +1,320 @@
+// Demon Animator - Advanced sprite animation system for SoulScript entities
+component DemonAnimator {
+    // Animation state
+    int currentFrame = 0;
+    float animationTimer = 0.0;
+    float frameRate = 0.12;
+    int maxFrames = 5;
+    string currentDirection = "idle";
+    
+    // Sprite configuration  
+    string spriteSheet = "demon_spritesheet";
+    int spriteWidth = 32;
+    int spriteHeight = 32;
+    vec2 spriteScale = {2.0, 2.0};
+    
+    // Animation sequences
+    map animations = {
+        "idle": {
+            "frames": [0, 1, 2, 1],
+            "row": 0,
+            "frameRate": 0.15,
+            "loop": true
+        },
+        "walkDown": {
+            "frames": [0, 1, 2, 3, 4, 5],
+            "row": 0,
+            "frameRate": 0.10,
+            "loop": true
+        },
+        "walkLeft": {
+            "frames": [0, 1, 2, 3, 4, 5],
+            "row": 1,
+            "frameRate": 0.10,
+            "loop": true
+        },
+        "walkRight": {
+            "frames": [0, 1, 2, 3, 4, 5],
+            "row": 1,
+            "frameRate": 0.10,
+            "loop": true,
+            "flipX": true
+        },
+        "walkUp": {
+            "frames": [0, 1, 2, 3, 4, 5],
+            "row": 2,
+            "frameRate": 0.10,
+            "loop": true
+        },
+        "attack": {
+            "frames": [0, 1, 2, 3, 4],
+            "row": 3,
+            "frameRate": 0.08,
+            "loop": false
+        },
+        "death": {
+            "frames": [0, 1, 2, 3, 4, 5, 6],
+            "row": 4,
+            "frameRate": 0.20,
+            "loop": false
+        },
+        "cast": {
+            "frames": [0, 1, 2, 3, 2, 1],
+            "row": 5,
+            "frameRate": 0.12,
+            "loop": false
+        }
+    };
+    
+    // State tracking
+    bool isAnimationComplete = false;
+    string previousDirection = "idle";
+    float stateTime = 0.0;
+    
+    fn init(vec2 startPos, string initialSprite) {
+        position = startPos;
+        if (initialSprite != "") {
+            spriteSheet = initialSprite;
+        }
+        
+        // Set initial sprite frame
+        setSpriteFrame(0, 0);
+        setFlipX(false);
+        
+        log("DemonAnimator initialized at " + position + " with sprite: " + spriteSheet);
+    }
+    
+    fn update(float deltaTime) {
+        animationTimer += deltaTime;
+        stateTime += deltaTime;
+        
+        // Get current animation data
+        map currentAnim = animations[currentDirection];
+        if (currentAnim == null) {
+            log("Warning: Animation '" + currentDirection + "' not found, using idle");
+            currentDirection = "idle";
+            currentAnim = animations["idle"];
+        }
+        
+        float animFrameRate = currentAnim["frameRate"];
+        array animFrames = currentAnim["frames"];
+        int animRow = currentAnim["row"];
+        bool shouldLoop = currentAnim["loop"];
+        bool shouldFlipX = currentAnim.hasKey("flipX") ? currentAnim["flipX"] : false;
+        
+        // Update animation frame
+        if (animationTimer >= animFrameRate) {
+            animationTimer = 0.0;
+            
+            if (shouldLoop || currentFrame < animFrames.length - 1) {
+                currentFrame = (currentFrame + 1) % animFrames.length;
+            } else {
+                // Non-looping animation completed
+                isAnimationComplete = true;
+                currentFrame = animFrames.length - 1; // Stay on last frame
+            }
+            
+            // Apply sprite frame
+            int spriteFrameIndex = animFrames[currentFrame];
+            setSpriteFrame(spriteFrameIndex, animRow);
+            setFlipX(shouldFlipX);
+        }
+        
+        // Visual debugging - show animation state
+        if (stateTime > 1.0) { // Every second
+            updateAnimationDebugInfo();
+            stateTime = 0.0;
+        }
+    }
+    
+    fn setAnimation(string newDirection) {
+        if (currentDirection == newDirection) return; // Already playing this animation
+        
+        previousDirection = currentDirection;
+        currentDirection = newDirection;
+        currentFrame = 0;
+        animationTimer = 0.0;
+        isAnimationComplete = false;
+        stateTime = 0.0;
+        
+        log("Animation changed: " + previousDirection + " -> " + currentDirection);
+        
+        // Immediately apply first frame
+        map newAnim = animations[currentDirection];
+        if (newAnim != null) {
+            array frames = newAnim["frames"];
+            int row = newAnim["row"];
+            bool flipX = newAnim.hasKey("flipX") ? newAnim["flipX"] : false;
+            
+            setSpriteFrame(frames[0], row);
+            setFlipX(flipX);
+        }
+    }
+    
+    fn move(string direction) {
+        string animName = "";
+        
+        switch (direction) {
+            case "down":
+                animName = "walkDown";
+                break;
+            case "left":
+                animName = "walkLeft";
+                break;
+            case "right":
+                animName = "walkRight";
+                break;
+            case "up":
+                animName = "walkUp";
+                break;
+            case "idle":
+                animName = "idle";
+                break;
+            default:
+                animName = "idle";
+                log("Unknown direction: " + direction + ", defaulting to idle");
+        }
+        
+        setAnimation(animName);
+    }
+    
+    fn attack() {
+        setAnimation("attack");
+    }
+    
+    fn cast() {
+        setAnimation("cast");
+    }
+    
+    fn die() {
+        setAnimation("death");
+    }
+    
+    fn isPlaying(string animationName) -> bool {
+        return currentDirection == animationName;
+    }
+    
+    fn isComplete() -> bool {
+        return isAnimationComplete;
+    }
+    
+    fn getCurrentAnimation() -> string {
+        return currentDirection;
+    }
+    
+    fn setFrameRate(float newFrameRate) {
+        // Update frame rate for current animation
+        if (animations.hasKey(currentDirection)) {
+            animations[currentDirection]["frameRate"] = newFrameRate;
+        }
+    }
+    
+    fn setSpriteScale(float scaleX, float scaleY) {
+        spriteScale = {scaleX, scaleY};
+        // Apply scale to renderer
+        setScale(spriteScale.x, spriteScale.y);
+    }
+    
+    fn addCustomAnimation(string name, array frames, int row, float frameRate, bool loop) {
+        animations[name] = {
+            "frames": frames,
+            "row": row, 
+            "frameRate": frameRate,
+            "loop": loop
+        };
+        
+        log("Custom animation added: " + name + " with " + frames.length + " frames");
+    }
+    
+    fn playOnce(string animationName, string returnToAnimation) {
+        if (animations.hasKey(animationName)) {
+            setAnimation(animationName);
+            
+            // Schedule return to previous animation after completion
+            map anim = animations[animationName];
+            if (!anim["loop"]) {
+                array frames = anim["frames"];
+                float totalDuration = frames.length * anim["frameRate"];
+                
+                // Use a delayed callback to return to idle/previous animation
+                scheduleCallback(totalDuration + 0.1, "returnToAnimation", returnToAnimation);
+            }
+        }
+    }
+    
+    fn updateAnimationDebugInfo() {
+        // Create visual debug info for the animation state
+        string debugText = currentDirection + " [" + currentFrame + "/" + 
+                          (animations[currentDirection]["frames"].length - 1) + "]";
+        
+        // Create floating text above entity
+        createParticle("text", {position.x, position.y - 40}, rgb(255, 255, 255), debugText);
+    }
+    
+    fn onAnimationComplete(string completedAnimation) {
+        log("Animation completed: " + completedAnimation);
+        
+        // Handle animation completion events
+        if (completedAnimation == "attack") {
+            broadcast("attackAnimationComplete", {
+                entityId: this.id,
+                position: position
+            });
+        } else if (completedAnimation == "cast") {
+            broadcast("castAnimationComplete", {
+                entityId: this.id,
+                position: position
+            });
+        } else if (completedAnimation == "death") {
+            broadcast("deathAnimationComplete", {
+                entityId: this.id,
+                position: position
+            });
+            // Entity should be destroyed or made inactive after death animation
+            isActive = false;
+        }
+    }
+    
+    fn getAnimationInfo() -> map {
+        map currentAnim = animations[currentDirection];
+        return {
+            "currentAnimation": currentDirection,
+            "currentFrame": currentFrame,
+            "totalFrames": currentAnim["frames"].length,
+            "frameRate": currentAnim["frameRate"],
+            "isComplete": isAnimationComplete,
+            "isLooping": currentAnim["loop"],
+            "stateTime": stateTime,
+            "spriteSheet": spriteSheet,
+            "availableAnimations": animations.keys()
+        };
+    }
+    
+    // Integration with movement systems
+    fn onMovementStart(vec2 direction) {
+        if (direction.x > 0) {
+            move("right");
+        } else if (direction.x < 0) {
+            move("left");
+        } else if (direction.y > 0) {
+            move("down");
+        } else if (direction.y < 0) {
+            move("up");
+        }
+    }
+    
+    fn onMovementStop() {
+        move("idle");
+    }
+    
+    // Called when entity takes damage
+    fn onDamage(float damage) {
+        if (damage >= health && currentDirection != "death") {
+            die();
+        }
+    }
+    
+    fn onDestroy() {
+        log("DemonAnimator destroyed - final animation: " + currentDirection);
+    }
+}

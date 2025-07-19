@@ -26,6 +26,11 @@ const DEFAULT_SOUL_FILES = [
     name: "world-manager.soul",
     path: "/src/assets/soul-files/world-manager.soul",
     description: "Global world state and rules manager"
+  },
+  {
+    name: "demon-animator.soul",
+    path: "/src/assets/soul-files/demon-animator.soul",
+    description: "Advanced sprite animation system with multiple states"
   }
 ];
 

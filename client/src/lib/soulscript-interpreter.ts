@@ -49,6 +49,7 @@ export class SoulScriptInterpreter {
   private builtinFunctions: Map<string, Function> = new Map();
   private nextEntityId: number = 1;
   private worldTime: number = 0;
+  private currentEntity: WorldEntity | null = null;
 
   constructor() {
     this.initializeBuiltinFunctions();
@@ -105,6 +106,51 @@ export class SoulScriptInterpreter {
     // Utility functions
     this.builtinFunctions.set('log', (message: string) => this.log('info', message.toString()));
     this.builtinFunctions.set('lerp', (a: number, b: number, t: number) => a + (b - a) * t);
+    
+    // Animation and sprite functions
+    this.builtinFunctions.set('setSpriteFrame', (frame: number, row: number) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('spriteFrame', frame);
+        this.currentEntity.properties.set('spriteRow', row);
+        this.log('info', `Sprite frame set to ${frame}, row ${row}`);
+      }
+    });
+    this.builtinFunctions.set('setFlipX', (flip: boolean) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('flipX', flip);
+      }
+    });
+    this.builtinFunctions.set('setFlipY', (flip: boolean) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('flipY', flip);
+      }
+    });
+    this.builtinFunctions.set('setScale', (scaleX: number, scaleY: number) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('scaleX', scaleX);
+        this.currentEntity.properties.set('scaleY', scaleY);
+      }
+    });
+    this.builtinFunctions.set('setRotation', (rotation: number) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('rotation', rotation);
+      }
+    });
+    this.builtinFunctions.set('setOpacity', (opacity: number) => {
+      if (this.currentEntity) {
+        this.currentEntity.properties.set('opacity', Math.max(0, Math.min(1, opacity)));
+      }
+    });
+    this.builtinFunctions.set('scheduleCallback', (delay: number, callbackName: string, ...args: any[]) => {
+      setTimeout(() => {
+        if (this.currentEntity && this.currentEntity.component) {
+          const method = this.currentEntity.component.methods.get(callbackName);
+          if (method) {
+            this.executeMethod(this.currentEntity.component, method, args);
+          }
+        }
+      }, delay * 1000);
+    });
   }
 
   createComponent(declaration: ComponentDeclaration, instanceName?: string): RuntimeComponent {
@@ -141,6 +187,14 @@ export class SoulScriptInterpreter {
     const component = this.components.get(componentName);
     if (!component || !component.isActive) return;
 
+    // Find the entity associated with this component
+    for (const entity of this.worldEntities.values()) {
+      if (entity.component === component) {
+        this.currentEntity = entity;
+        break;
+      }
+    }
+
     const updateMethod = component.methods.get('update');
     if (updateMethod) {
       try {
@@ -149,6 +203,8 @@ export class SoulScriptInterpreter {
         this.log('error', `Error updating ${componentName}: ${error}`, 0);
       }
     }
+    
+    this.currentEntity = null; // Reset after update
   }
 
   updateAllComponents(): void {

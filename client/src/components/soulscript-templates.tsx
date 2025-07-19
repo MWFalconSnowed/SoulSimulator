@@ -21,6 +21,65 @@ component SceneLoader {
 }`
   },
   {
+    name: "Demon Animator",
+    category: "Animation Systems",
+    icon: Sparkles,
+    description: "Advanced sprite animation system with multiple states, frame management, and smooth transitions",
+    complexity: "Advanced", 
+    tags: ["Animation", "Sprites", "State Machine"],
+    code: `// Advanced Demon Animator - Multi-state sprite animation
+component DemonAnimator {
+    int currentFrame = 0;
+    float animationTimer = 0.0;
+    float frameRate = 0.12;
+    string currentDirection = "idle";
+    
+    fn init(vec2 startPos) {
+        position = startPos;
+        setSpriteFrame(0, 0);
+        setFlipX(false);
+        log("DemonAnimator initialized at " + position);
+    }
+    
+    fn update(float deltaTime) {
+        animationTimer += deltaTime;
+        
+        if (animationTimer >= frameRate) {
+            animationTimer = 0.0;
+            currentFrame = (currentFrame + 1) % 6;
+            
+            // Apply animation based on direction
+            if (currentDirection == "down") {
+                setSpriteFrame(currentFrame, 0);
+                setFlipX(false);
+            } else if (currentDirection == "left") {
+                setSpriteFrame(currentFrame, 1);
+                setFlipX(false);
+            } else if (currentDirection == "right") {
+                setSpriteFrame(currentFrame, 1);
+                setFlipX(true);
+            } else if (currentDirection == "up") {
+                setSpriteFrame(currentFrame, 2);
+                setFlipX(false);
+            } else {
+                setSpriteFrame(0, 0); // idle
+                setFlipX(false);
+            }
+        }
+    }
+    
+    fn move(string direction) {
+        currentDirection = direction;
+        log("Animation changed to: " + direction);
+    }
+    
+    fn attack() {
+        currentDirection = "attack";
+        setSpriteFrame(0, 3); // Attack row
+    }
+}`
+  },
+  {
     name: "Conscious AI Entity",
     category: "AI & Consciousness", 
     icon: Brain,

@@ -41,6 +41,7 @@ component MysticalEntity {
 - **conscience.soul**: IA vraiment consciente avec mémoire
 - **world-manager.soul**: Gestionnaire de monde global
 - **mystical-sanctuary.soul**: Scène complète Baldur's Gate II
+- **demon-animator.soul**: Système d'animation de sprites avancé avec états multiples
 
 ### 🎨 **Interface IDE Mystique**
 - **Panneaux**: Éditeur, gestionnaire .soul, templates, logs
@@ -71,6 +72,10 @@ broadcast(), subscribe(), unsubscribe()
 
 // Temps et physique
 getTime(), deltaTime, clamp(), lerp()
+
+// Animation et rendu
+setSpriteFrame(), setFlipX(), setFlipY(), setScale()
+setRotation(), setOpacity(), scheduleCallback()
 
 // Particules et effets
 createParticle(), createExplosion()

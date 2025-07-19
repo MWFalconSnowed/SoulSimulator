@@ -25,8 +25,8 @@ The application follows a modern full-stack architecture with clear separation b
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js for REST API
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect
-- **Database Provider**: Neon Database (serverless PostgreSQL)
-- **Session Management**: Built-in memory storage with plans for PostgreSQL sessions
+- **Database Provider**: PostgreSQL with Neon Database support
+- **Session Management**: Database-backed storage using PostgreSQL
 
 ### Build System
 - **Frontend**: Vite handles React compilation, TypeScript checking, and asset bundling

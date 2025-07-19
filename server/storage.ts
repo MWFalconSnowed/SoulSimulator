@@ -1,4 +1,8 @@
 import { 
+  soulscriptFiles,
+  worldEntities,
+  simulationLogs,
+  worldMaps,
   type SoulscriptFile, 
   type InsertSoulscriptFile, 
   type WorldEntity, 
@@ -8,6 +12,8 @@ import {
   type WorldMap,
   type InsertWorldMap
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   // SoulScript Files
@@ -36,183 +42,147 @@ export interface IStorage {
   deleteMap(id: number): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private files: Map<number, SoulscriptFile>;
-  private entities: Map<number, WorldEntity>;
-  private logs: SimulationLog[];
-  private maps: Map<number, WorldMap>;
-  private currentFileId: number;
-  private currentEntityId: number;
-  private currentLogId: number;
-  private currentMapId: number;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.files = new Map();
-    this.entities = new Map();
-    this.logs = [];
-    this.maps = new Map();
-    this.currentFileId = 1;
-    this.currentEntityId = 1;
-    this.currentLogId = 1;
-    this.currentMapId = 1;
-    
-    // Initialize with MAP001
     this.initializeDefaultMaps();
   }
 
-  private initializeDefaultMaps() {
-    const map001: WorldMap = {
-      id: 1,
-      name: "Ancient Temple",
-      code: "MAP001",
-      backgroundImage: "/attached_assets/MAP001_1752905174470.png",
-      width: 800,
-      height: 600,
-      tileSize: 32,
-      description: "A mystical ancient temple with warm torchlight and stone architecture",
-      isActive: true,
-      createdAt: new Date()
-    };
-    this.maps.set(1, map001);
-    this.currentMapId = 2;
+  private async initializeDefaultMaps() {
+    try {
+      // Check if MAP001 already exists
+      const [existingMap] = await db.select().from(worldMaps).where(eq(worldMaps.code, "MAP001"));
+      
+      if (!existingMap) {
+        // Create MAP001
+        await db.insert(worldMaps).values({
+          name: "Ancient Temple",
+          code: "MAP001", 
+          backgroundImage: "/attached_assets/MAP001_1752905174470.png",
+          width: 800,
+          height: 600,
+          tileSize: 32,
+          description: "A mystical ancient temple with warm torchlight and stone architecture"
+        });
+      }
+    } catch (error) {
+      console.warn("Could not initialize default maps:", error);
+    }
   }
 
   // SoulScript Files
   async getAllFiles(): Promise<SoulscriptFile[]> {
-    return Array.from(this.files.values());
+    const files = await db.select().from(soulscriptFiles);
+    return files;
   }
 
   async getFile(id: number): Promise<SoulscriptFile | undefined> {
-    return this.files.get(id);
+    const [file] = await db.select().from(soulscriptFiles).where(eq(soulscriptFiles.id, id));
+    return file || undefined;
   }
 
   async createFile(insertFile: InsertSoulscriptFile): Promise<SoulscriptFile> {
-    const id = this.currentFileId++;
-    const file: SoulscriptFile = {
-      ...insertFile,
-      id,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.files.set(id, file);
+    const [file] = await db
+      .insert(soulscriptFiles)
+      .values(insertFile)
+      .returning();
     return file;
   }
 
   async updateFile(id: number, insertFile: InsertSoulscriptFile): Promise<SoulscriptFile | undefined> {
-    const existingFile = this.files.get(id);
-    if (!existingFile) return undefined;
-
-    const updatedFile: SoulscriptFile = {
-      ...existingFile,
-      ...insertFile,
-      updatedAt: new Date()
-    };
-    this.files.set(id, updatedFile);
-    return updatedFile;
+    const [file] = await db
+      .update(soulscriptFiles)
+      .set({ ...insertFile, updatedAt: new Date() })
+      .where(eq(soulscriptFiles.id, id))
+      .returning();
+    return file || undefined;
   }
 
   async deleteFile(id: number): Promise<boolean> {
-    return this.files.delete(id);
+    const result = await db.delete(soulscriptFiles).where(eq(soulscriptFiles.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // World Entities
   async getAllEntities(): Promise<WorldEntity[]> {
-    return Array.from(this.entities.values());
+    const entities = await db.select().from(worldEntities);
+    return entities;
   }
 
   async createEntity(insertEntity: InsertWorldEntity): Promise<WorldEntity> {
-    const id = this.currentEntityId++;
-    const entity: WorldEntity = {
-      ...insertEntity,
-      id,
-      isActive: true,
-      createdAt: new Date()
-    };
-    this.entities.set(id, entity);
+    const [entity] = await db
+      .insert(worldEntities)
+      .values(insertEntity)
+      .returning();
     return entity;
   }
 
   async updateEntity(id: number, insertEntity: InsertWorldEntity): Promise<WorldEntity | undefined> {
-    const existingEntity = this.entities.get(id);
-    if (!existingEntity) return undefined;
-
-    const updatedEntity: WorldEntity = {
-      ...existingEntity,
-      ...insertEntity
-    };
-    this.entities.set(id, updatedEntity);
-    return updatedEntity;
+    const [entity] = await db
+      .update(worldEntities)
+      .set(insertEntity)
+      .where(eq(worldEntities.id, id))
+      .returning();
+    return entity || undefined;
   }
 
   async deleteEntity(id: number): Promise<boolean> {
-    return this.entities.delete(id);
+    const result = await db.delete(worldEntities).where(eq(worldEntities.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // Simulation Logs
   async getRecentLogs(limit: number): Promise<SimulationLog[]> {
-    return this.logs.slice(-limit);
+    const logs = await db.select().from(simulationLogs)
+      .orderBy(desc(simulationLogs.timestamp))
+      .limit(limit);
+    return logs;
   }
 
   async createLog(insertLog: InsertSimulationLog): Promise<SimulationLog> {
-    const id = this.currentLogId++;
-    const log: SimulationLog = {
-      ...insertLog,
-      id,
-      timestamp: new Date(),
-      entityId: insertLog.entityId || null
-    };
-    this.logs.push(log);
-    
-    // Keep only last 1000 logs
-    if (this.logs.length > 1000) {
-      this.logs.shift();
-    }
-    
+    const [log] = await db
+      .insert(simulationLogs)
+      .values(insertLog)
+      .returning();
     return log;
   }
 
   // World Maps
   async getAllMaps(): Promise<WorldMap[]> {
-    return Array.from(this.maps.values());
+    const maps = await db.select().from(worldMaps);
+    return maps;
   }
 
   async getMap(id: number): Promise<WorldMap | undefined> {
-    return this.maps.get(id);
+    const [map] = await db.select().from(worldMaps).where(eq(worldMaps.id, id));
+    return map || undefined;
   }
 
   async getMapByCode(code: string): Promise<WorldMap | undefined> {
-    return Array.from(this.maps.values()).find(map => map.code === code);
+    const [map] = await db.select().from(worldMaps).where(eq(worldMaps.code, code));
+    return map || undefined;
   }
 
   async createMap(insertMap: InsertWorldMap): Promise<WorldMap> {
-    const id = this.currentMapId++;
-    const map: WorldMap = {
-      ...insertMap,
-      id,
-      isActive: true,
-      createdAt: new Date(),
-      tileSize: insertMap.tileSize || 32,
-      description: insertMap.description || null
-    };
-    this.maps.set(id, map);
+    const [map] = await db
+      .insert(worldMaps)
+      .values(insertMap)
+      .returning();
     return map;
   }
 
   async updateMap(id: number, insertMap: InsertWorldMap): Promise<WorldMap | undefined> {
-    const existingMap = this.maps.get(id);
-    if (!existingMap) return undefined;
-
-    const updatedMap: WorldMap = {
-      ...existingMap,
-      ...insertMap
-    };
-    this.maps.set(id, updatedMap);
-    return updatedMap;
+    const [map] = await db
+      .update(worldMaps)
+      .set(insertMap)
+      .where(eq(worldMaps.id, id))
+      .returning();
+    return map || undefined;
   }
 
   async deleteMap(id: number): Promise<boolean> {
-    return this.maps.delete(id);
+    const result = await db.delete(worldMaps).where(eq(worldMaps.id, id));
+    return (result.rowCount || 0) > 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

@@ -1,0 +1,490 @@
+// Mystical Sanctuary - Complete Baldur's Gate II inspired scene
+component MysticalSanctuary {
+    // Sanctuary properties
+    vec2 altarPosition = {400.0, 300.0};
+    float sanctuaryPower = 1000.0;
+    int pillarCount = 4;
+    array ancientPillars = [];
+    array sacredFlames = [];
+    
+    // Mystical ambiance
+    float ambientEnergy = 500.0;
+    color holyAura = rgb(255, 215, 0);  // Golden divine light
+    bool isConsecrated = true;
+    float blessingRadius = 150.0;
+    
+    // Ancient guardians
+    Entity elderSpirit;
+    array templeGuardians = [];
+    int guardianCount = 3;
+    
+    fn init() {
+        log("🏛️ Ancient Sanctuary awakens from eternal slumber...");
+        
+        // Create the sacred altar
+        createSacredAltar();
+        
+        // Summon the four elemental pillars
+        summonElementalPillars();
+        
+        // Light the eternal flames
+        igniteEternalFlames();
+        
+        // Awaken the Elder Spirit
+        awakenElderSpirit();
+        
+        // Deploy temple guardians
+        deployTempleGuardians();
+        
+        // Establish protective ward
+        establishProtectiveWard();
+        
+        log("✨ The Mystical Sanctuary pulses with ancient power!");
+    }
+    
+    fn update(float deltaTime) {
+        // Maintain sanctuary energy
+        maintainSacredEnergy(deltaTime);
+        
+        // Update mystical ambiance
+        updateMysticalAmbiance(deltaTime);
+        
+        // Process pilgrim interactions
+        processPilgrimInteractions();
+        
+        // Guardian patrol logic
+        updateGuardianPatrols(deltaTime);
+        
+        // Ancient ritual cycles
+        processAncientRituals(deltaTime);
+        
+        // Detect intruders
+        detectIntruders();
+    }
+    
+    fn createSacredAltar() {
+        Entity altar = createEntity("SacredAltar", altarPosition);
+        altar.type = "Religious";
+        altar.power = 500.0;
+        altar.canInteract = true;
+        altar.radius = 25.0;
+        altar.tint = rgb(255, 215, 0);  // Golden glow
+        
+        // Altar blessing effect
+        altar.onInteraction = "receiveBlessing";
+        
+        // Sacred runes around altar
+        for (int i = 0; i < 8; i++) {
+            float angle = i * 45.0 * 3.14159 / 180.0;
+            vec2 runePos = {
+                altarPosition.x + cos(angle) * 40.0,
+                altarPosition.y + sin(angle) * 40.0
+            };
+            
+            Entity rune = createEntity("SacredRune", runePos);
+            rune.glowIntensity = 0.8;
+            rune.tint = rgb(200, 255, 255);  // Mystical blue
+            rune.pulseRate = 2.0 + random() * 1.0;
+        }
+        
+        log("⭐ Sacred Altar consecrated with divine energy");
+    }
+    
+    fn summonElementalPillars() {
+        // Four corners of sanctuary - elemental guardians
+        array elements = ["Fire", "Water", "Earth", "Air"];
+        array colors = [
+            rgb(255, 100, 0),   // Fire - Orange-red
+            rgb(0, 150, 255),   // Water - Deep blue  
+            rgb(139, 69, 19),   // Earth - Brown
+            rgb(220, 220, 220)  // Air - Silver
+        ];
+        
+        array positions = [
+            {300.0, 200.0},  // Northwest
+            {500.0, 200.0},  // Northeast
+            {300.0, 400.0},  // Southwest
+            {500.0, 400.0}   // Southeast
+        ];
+        
+        for (int i = 0; i < 4; i++) {
+            Entity pillar = createEntity("ElementalPillar", positions[i]);
+            pillar.element = elements[i];
+            pillar.tint = colors[i];
+            pillar.height = 80.0;
+            pillar.power = 200.0;
+            pillar.resonanceFreq = 1.0 + i * 0.3;
+            
+            // Elemental aura
+            pillar.auraRadius = 60.0;
+            pillar.blessesNearby = true;
+            
+            ancientPillars.add(pillar);
+            
+            log("🗿 " + elements[i] + " Pillar rises from ancient stone");
+        }
+    }
+    
+    fn igniteEternalFlames() {
+        // Sacred flames that never die
+        for (int i = 0; i < 6; i++) {
+            float angle = i * 60.0 * 3.14159 / 180.0;
+            vec2 flamePos = {
+                altarPosition.x + cos(angle) * 80.0,
+                altarPosition.y + sin(angle) * 80.0
+            };
+            
+            Entity flame = createEntity("EternalFlame", flamePos);
+            flame.intensity = 0.9 + random() * 0.1;
+            flame.flickerRate = 3.0 + random() * 2.0;
+            flame.tint = rgb(255, 180, 0);  // Golden flame
+            flame.warmthRadius = 35.0;
+            flame.isDivine = true;
+            
+            sacredFlames.add(flame);
+        }
+        
+        log("🔥 Six Eternal Flames ignited with celestial fire");
+    }
+    
+    fn awakenElderSpirit() {
+        // The ancient guardian of the sanctuary
+        elderSpirit = createEntity("ElderSpirit", altarPosition);
+        elderSpirit.consciousness = 1000.0;  // Ancient wisdom
+        elderSpirit.ethereal = true;
+        elderSpirit.canSpeak = true;
+        elderSpirit.knowledge = "infinite";
+        elderSpirit.mood = "benevolent";
+        elderSpirit.tint = rgb(200, 200, 255);  // Ethereal blue-white
+        elderSpirit.opacity = 0.7;  // Semi-transparent
+        
+        // Elder Spirit abilities
+        elderSpirit.canBless = true;
+        elderSpirit.canHeal = true;
+        elderSpirit.canProphesize = true;
+        elderSpirit.speechPatterns = [
+            "Welcome, seeker of wisdom...",
+            "The ancient texts speak of your coming...",
+            "What guidance do you seek from ages past?",
+            "The sanctuary recognizes your pure intent..."
+        ];
+        
+        log("👻 Elder Spirit awakens - repository of millennia of wisdom");
+    }
+    
+    fn deployTempleGuardians() {
+        array guardianPositions = [
+            {200.0, 300.0},  // West entrance
+            {600.0, 300.0},  // East entrance  
+            {400.0, 150.0}   // North entrance
+        ];
+        
+        for (int i = 0; i < guardianCount; i++) {
+            Entity guardian = createEntity("TempleGuardian", guardianPositions[i]);
+            guardian.vigilance = 100.0;
+            guardian.loyaltyToSanctuary = 1000.0;
+            guardian.patrolRadius = 100.0;
+            guardian.canDetectEvil = true;
+            guardian.weapon = "SacredStaff";
+            guardian.armor = "HolyRobes";
+            guardian.tint = rgb(180, 180, 255);  // Blessed guardian blue
+            
+            // Guardian AI
+            guardian.homePosition = guardianPositions[i];
+            guardian.alertLevel = 0.0;
+            guardian.patrolPattern = "circular";
+            
+            templeGuardians.add(guardian);
+        }
+        
+        log("🛡️ Temple Guardians take their eternal watch positions");
+    }
+    
+    fn establishProtectiveWard() {
+        // Magical barrier protecting the sanctuary
+        Entity ward = createEntity("ProtectiveWard", altarPosition);
+        ward.radius = 200.0;
+        ward.strength = 1000.0;
+        ward.deflectsEvil = true;
+        ward.purifies = true;
+        ward.isInvisible = false;  // Visible as shimmering barrier
+        ward.tint = rgb(255, 255, 200);  // Protective golden shimmer
+        ward.pulseRate = 0.5;  // Slow, steady pulse
+        
+        log("🔮 Protective Ward established - sanctuary is now blessed ground");
+    }
+    
+    fn maintainSacredEnergy(float deltaTime) {
+        // Energy flows between pillars and altar
+        float energyFlow = 0.0;
+        
+        for (Entity pillar : ancientPillars) {
+            if (pillar.isActive) {
+                energyFlow += pillar.power * deltaTime * 0.1;
+                
+                // Visual energy streams
+                createParticle("energyStream", pillar.position, pillar.tint);
+            }
+        }
+        
+        ambientEnergy += energyFlow;
+        sanctuaryPower = min(sanctuaryPower + energyFlow, 2000.0);
+        
+        // Sanctuary grows stronger over time
+        if (sanctuaryPower > 1500.0) {
+            blessingRadius = 200.0;  // Expanded blessing area
+            holyAura = rgb(255, 255, 150);  // Brighter divine light
+        }
+    }
+    
+    fn updateMysticalAmbiance(float deltaTime) {
+        float time = getTime();
+        
+        // Breathing effect for the sanctuary
+        float breathe = sin(time * 0.5) * 0.1 + 1.0;
+        
+        // Update all mystical elements
+        for (Entity flame : sacredFlames) {
+            flame.intensity = 0.8 + sin(time * flame.flickerRate) * 0.2;
+            flame.radius = 15.0 * breathe;
+        }
+        
+        // Pillar resonance
+        for (int i = 0; i < ancientPillars.length; i++) {
+            Entity pillar = ancientPillars[i];
+            float resonance = sin(time * pillar.resonanceFreq + i * 1.57) * 0.3 + 0.7;
+            pillar.glowIntensity = resonance;
+        }
+        
+        // Elder Spirit movement
+        if (elderSpirit != null) {
+            elderSpirit.position.y = altarPosition.y + sin(time * 0.3) * 10.0;
+            elderSpirit.opacity = 0.6 + sin(time * 0.8) * 0.1;
+        }
+    }
+    
+    fn processPilgrimInteractions() {
+        // Find nearby entities that might be pilgrims
+        array nearbyEntities = getEntitiesInRadius(altarPosition, blessingRadius);
+        
+        for (Entity entity : nearbyEntities) {
+            if (entity.type == "Pilgrim" || entity.type == "Seeker") {
+                // Grant blessing
+                if (entity.hasProperty("faith")) {
+                    entity.faith += 10.0;
+                    entity.health = min(entity.health + 5.0, entity.maxHealth);
+                    
+                    // Visual blessing effect
+                    createParticle("blessing", entity.position, holyAura);
+                    
+                    log("✨ Pilgrim " + entity.name + " receives sanctuary blessing");
+                }
+            }
+            
+            // Purify corrupted entities
+            if (entity.hasProperty("corruption") && entity.corruption > 0) {
+                entity.corruption = max(entity.corruption - 20.0, 0.0);
+                createParticle("purification", entity.position, rgb(255, 255, 255));
+                
+                log("🌟 Corruption purged from " + entity.name);
+            }
+        }
+    }
+    
+    fn updateGuardianPatrols(float deltaTime) {
+        for (Entity guardian : templeGuardians) {
+            if (!guardian.isActive) continue;
+            
+            // Patrol movement
+            float time = getTime() + guardian.id * 2.0;  // Offset timing
+            vec2 patrolOffset = {
+                cos(time * 0.5) * guardian.patrolRadius * 0.3,
+                sin(time * 0.5) * guardian.patrolRadius * 0.3
+            };
+            
+            vec2 targetPos = guardian.homePosition + patrolOffset;
+            vec2 direction = normalize(targetPos - guardian.position);
+            
+            guardian.position += direction * 20.0 * deltaTime;
+            
+            // Face movement direction
+            guardian.rotation = atan2(direction.y, direction.x);
+        }
+    }
+    
+    fn processAncientRituals(float deltaTime) {
+        float time = getTime();
+        
+        // Every 30 seconds, perform blessing ritual
+        if (int(time) % 30 == 0 && int(time * 10) % 10 == 0) {
+            performBlessingRitual();
+        }
+        
+        // Every 2 minutes, commune with spirits
+        if (int(time) % 120 == 0 && int(time * 10) % 10 == 0) {
+            communeWithAncestralSpirits();
+        }
+        
+        // Hourly sanctification (in game time)
+        if (int(time) % 300 == 0 && int(time * 10) % 10 == 0) {
+            performSanctificationRitual();
+        }
+    }
+    
+    fn performBlessingRitual() {
+        log("🙏 Ancient Blessing Ritual begins...");
+        
+        // All flames burn brighter
+        for (Entity flame : sacredFlames) {
+            flame.intensity = 1.5;
+            flame.tint = rgb(255, 255, 200);  // White-gold
+        }
+        
+        // Energy waves emanate from altar
+        for (int i = 0; i < 12; i++) {
+            float angle = i * 30.0 * 3.14159 / 180.0;
+            vec2 wavePos = {
+                altarPosition.x + cos(angle) * 50.0,
+                altarPosition.y + sin(angle) * 50.0
+            };
+            createParticle("blessingWave", wavePos, holyAura);
+        }
+        
+        // Boost sanctuary power
+        sanctuaryPower += 100.0;
+        
+        broadcast("blessingRitualPerformed", {
+            power: sanctuaryPower,
+            radius: blessingRadius
+        });
+    }
+    
+    fn communeWithAncestralSpirits() {
+        log("👻 Communing with Ancestral Spirits...");
+        
+        if (elderSpirit != null) {
+            // Elder Spirit shares ancient wisdom
+            elderSpirit.opacity = 1.0;  // Become fully visible
+            elderSpirit.consciousness += 50.0;
+            
+            // Spawn temporary spirit orbs
+            for (int i = 0; i < 5; i++) {
+                vec2 spiritPos = altarPosition + randomVec2(-100, 100);
+                Entity spiritOrb = createEntity("AncestralSpirit", spiritPos);
+                spiritOrb.lifetime = 15.0;  // Temporary manifestation
+                spiritOrb.wisdom = random() * 100.0;
+                spiritOrb.tint = rgb(200, 150, 255);  // Mystical purple
+                spiritOrb.opacity = 0.6;
+            }
+        }
+        
+        broadcast("ancestralCommunion", {sanctuary: this.id});
+    }
+    
+    fn performSanctificationRitual() {
+        log("🌟 Great Sanctification Ritual - sanctuary reaches peak power!");
+        
+        // Maximum divine energy
+        sanctuaryPower = 2000.0;
+        ambientEnergy = 1000.0;
+        blessingRadius = 250.0;
+        
+        // All elements resonate in harmony
+        for (int i = 0; i < ancientPillars.length; i++) {
+            Entity pillar = ancientPillars[i];
+            pillar.power = 300.0;
+            pillar.glowIntensity = 1.5;
+            
+            // Elemental harmony effect
+            createParticle("elementalHarmony", pillar.position, pillar.tint);
+        }
+        
+        // Divine manifestation
+        createParticle("divineManifest", altarPosition, rgb(255, 255, 255));
+        
+        broadcast("sanctificationComplete", {
+            sanctuaryId: this.id,
+            divineLevel: "maximum"
+        });
+    }
+    
+    fn detectIntruders() {
+        array allEntities = getAllEntities();
+        
+        for (Entity entity : allEntities) {
+            if (entity.hasProperty("evil") && entity.evil > 50.0) {
+                float distanceToSanctuary = distance(entity.position, altarPosition);
+                
+                if (distanceToSanctuary < blessingRadius) {
+                    // Evil detected in sanctuary!
+                    alertGuardians(entity);
+                    repelEvilEntity(entity);
+                    
+                    log("⚔️ SANCTUARY BREACH: Evil entity " + entity.name + " detected!");
+                }
+            }
+        }
+    }
+    
+    fn alertGuardians(Entity threat) {
+        for (Entity guardian : templeGuardians) {
+            guardian.alertLevel = 100.0;
+            guardian.targetThreat = threat.id;
+            guardian.combatMode = true;
+            
+            // Guardians converge on threat
+            vec2 interceptPath = normalize(threat.position - guardian.position);
+            guardian.velocity = interceptPath * 60.0;
+        }
+    }
+    
+    fn repelEvilEntity(Entity evilEntity) {
+        // Sanctuary's protective power pushes back evil
+        vec2 repelDirection = normalize(evilEntity.position - altarPosition);
+        float repelForce = sanctuaryPower / distance(evilEntity.position, altarPosition);
+        
+        evilEntity.velocity += repelDirection * repelForce * 0.1;
+        
+        // Damage evil entities
+        if (evilEntity.hasProperty("health")) {
+            evilEntity.health -= sanctuaryPower * 0.01;
+            createParticle("holyDamage", evilEntity.position, holyAura);
+        }
+    }
+    
+    fn getSanctuaryStatus() -> map {
+        return {
+            "name": "Mystical Sanctuary of Ancient Wisdom",
+            "power": sanctuaryPower,
+            "ambientEnergy": ambientEnergy,
+            "blessingRadius": blessingRadius,
+            "isConsecrated": isConsecrated,
+            "pillarCount": ancientPillars.length,
+            "flameCount": sacredFlames.length,
+            "guardianCount": templeGuardians.length,
+            "elderSpiritPresent": elderSpirit != null,
+            "totalWisdom": elderSpirit?.consciousness || 0.0,
+            "threatLevel": "peaceful",
+            "lastRitual": "blessing",
+            "holyAura": holyAura
+        };
+    }
+    
+    fn onDestroy() {
+        log("💔 The Mystical Sanctuary fades from existence...");
+        log("🌅 But its wisdom echoes through eternity.");
+        
+        // Final blessing to all nearby entities
+        array nearby = getEntitiesInRadius(altarPosition, blessingRadius * 2);
+        for (Entity entity : nearby) {
+            if (entity.hasProperty("memories")) {
+                entity.memories.add("witnessed_sanctuary_transcendence");
+            }
+        }
+        
+        broadcast("sanctuaryTranscendence", {
+            finalPower: sanctuaryPower,
+            wisdomPreserved: true
+        });
+    }
+}

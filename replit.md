@@ -56,10 +56,12 @@ The application follows a modern full-stack architecture with clear separation b
 The application features a complete custom programming language designed for RPG entity development:
 - **Parser** (`soulscript-parser.ts`): Converts SoulScript source code into Abstract Syntax Trees (AST)
 - **Advanced Interpreter** (`soulscript-interpreter.ts`): Full execution engine with built-in functions, events, and world management
-- **Default .soul Files**: Pre-built components (atom.soul, spawner.soul, conscience.soul, world-manager.soul)
+- **Default .soul Files**: Pre-built components (atom.soul, spawner.soul, conscience.soul, world-manager.soul, mystical-sanctuary.soul)
 - **File Management**: Complete IDE system for creating, editing, importing, and exporting .soul files
 - **Runtime Features**: Entity creation, physics simulation, event broadcasting, consciousness modeling
 - **Built-in Functions**: Math, vectors, colors, entity management, time, events, and utility functions
+- **Complete Scene Templates**: Full Baldur's Gate II inspired scenes with NPCs, quests, and interactive elements
+- **Template Library**: Pre-built components for AI entities, particle systems, quest systems, and guardians
 
 ### World Simulation Engine
 - **Isometric Renderer**: Canvas-based isometric world view with entity visualization
